@@ -97,6 +97,7 @@ and string_of_expr_with (depth : int) (print_a : 'a -> string) (e : 'a expr) : s
   then "..."
   else (
     match e with
+    | EString (s, a) -> sprintf "\"%s\" %s" s (print_a a)
     | ESeq (e1, e2, a) -> string_of_expr e1 ^ "; " ^ string_of_expr e2
     | ETuple ([ e ], a) -> "(" ^ string_of_expr e ^ ",)" ^ print_a a
     | ETuple (exprs, a) ->
@@ -414,6 +415,10 @@ let rec format_expr (fmt : Format.formatter) (print_a : 'a -> string) (e : 'a ex
   =
   let help = format_expr fmt print_a in
   match e with
+  | EString (s, a) ->
+    open_label fmt "EString" (print_a a);
+    pp_print_string fmt s;
+    close_paren fmt
   | ESeq (e1, e2, a) ->
     open_label fmt "ESeq" (print_a a);
     help e1;
