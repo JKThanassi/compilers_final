@@ -1,0 +1,24 @@
+{
+  "name": "Ocaml",
+  "dockerFile": "Dockerfile",
+  "runArgs": [
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined"
+  ],
+  "remoteUser": "opam",
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/zsh",
+    "editor.formatOnSave": true,
+    "ocaml-formatter.profile": "janestreet",
+    "[ocaml]": {
+      "editor.defaultFormatter": "badochov.ocaml-formatter"
+    }
+  },
+  "extensions": [
+    "ocamllabs.ocaml-platform",
+    "badochov.ocaml-formatter",
+    "editorconfig.editorconfig",
+    "ms-vscode.cpptools"
+  ]
+}
