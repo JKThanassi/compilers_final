@@ -98,9 +98,9 @@ and string_of_expr_with (depth : int) (print_a : 'a -> string) (e : 'a expr) : s
   else (
     match e with
     | EString (s, a) -> sprintf "\"%s\" %s" s (print_a a)
-    | ESeq (e1, e2, a) -> string_of_expr e1 ^ "; " ^ string_of_expr e2
+    | ESeq (e1, e2, _) -> string_of_expr e1 ^ "; " ^ string_of_expr e2
     | ETuple ([ e ], a) -> "(" ^ string_of_expr e ^ ",)" ^ print_a a
-    | ETuple (exprs, a) ->
+    | ETuple (exprs, _) ->
       "(" ^ ExtString.String.join ", " (List.map string_of_expr exprs) ^ ")"
     | EGetItem (e, idx, a) ->
       sprintf "%s[%s]%s" (string_of_expr e) (string_of_expr idx) (print_a a)
@@ -236,6 +236,8 @@ and string_of_cexpr_with (depth : int) (print_a : 'a -> string) (c : 'a cexpr) :
   then "..."
   else (
     match c with
+    | CStringLiteral (s, a) -> 
+      sprintf "(\"%s\")%s" s (print_a a)
     | CTuple (imms, a) ->
       sprintf
         "(%s)%s"
@@ -563,7 +565,7 @@ let format_program (fmt : Format.formatter) (print_a : 'a -> string) (p : 'a pro
     : unit
   =
   match p with
-  | Program (decls, body, a) ->
+  | Program (decls, body, _) ->
     print_list
       fmt
       (fun fmt -> format_declgroup fmt print_a)

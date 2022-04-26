@@ -10,6 +10,7 @@
   runner
   lexer
   parser
+  snakeString
   graph)
  (libraries ounit2 extlib unix)
  (wrapped false))

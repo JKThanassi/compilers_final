@@ -73,7 +73,6 @@ type 'a immexpr =
   | ImmNum of int64 * 'a
   | ImmBool of bool * 'a
   | ImmId of string * 'a
-  | ImmString of string * 'a
   | ImmNil of 'a
 
 and 'a cexpr =
@@ -87,6 +86,7 @@ and 'a cexpr =
   | CGetItem of 'a immexpr * 'a immexpr * 'a
   | CSetItem of 'a immexpr * 'a immexpr * 'a immexpr * 'a
   | CLambda of string list * 'a aexpr * 'a
+  | CStringLiteral of string * 'a 
 
 and 'a aexpr =
   (* anf expressions *)
@@ -112,7 +112,6 @@ let get_tag_imm e =
   | ImmNum (_, t) -> t
   | ImmBool (_, t) -> t
   | ImmId (_, t) -> t
-  | ImmString (_, t) -> t
   | ImmNil t -> t
 ;;
 
@@ -127,6 +126,7 @@ let get_tag_cexpr e =
   | CGetItem (_, _, t) -> t
   | CSetItem (_, _, _, t) -> t
   | CLambda (_, _, t) -> t
+  | CStringLiteral (_, t) -> t
 ;;
 
 let get_tag_aexpr e =
@@ -327,6 +327,9 @@ let atag (p : 'a aprogram) : tag aprogram =
     | ACExpr c -> ACExpr (helpC c)
   and helpC (c : 'a cexpr) : tag cexpr =
     match c with
+    | CStringLiteral (s, _) -> 
+      let prim_tag = tag () in
+      CStringLiteral (s, prim_tag)
     | CPrim1 (op, e, _) ->
       let prim_tag = tag () in
       CPrim1 (op, helpI e, prim_tag)
@@ -356,7 +359,6 @@ let atag (p : 'a aprogram) : tag aprogram =
     match i with
     | ImmNil _ -> ImmNil (tag ())
     | ImmId (x, _) -> ImmId (x, tag ())
-    | ImmString (s, _) -> ImmString (s, tag ())
     | ImmNum (n, _) -> ImmNum (n, tag ())
     | ImmBool (b, _) -> ImmBool (b, tag ())
   and helpP p =

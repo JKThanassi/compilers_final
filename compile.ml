@@ -5,6 +5,7 @@ open Exprs
 open Assembly
 open Errors
 open Graph
+open SnakeString
 module StringSet = Set.Make (String)
 module ArgSet = Set.Make (Arg)
 
@@ -120,7 +121,7 @@ let rec find_one (l : 'a list) (elt : 'a) : bool =
 let rec find_dup (l : 'a list) : 'a option =
   match l with
   | [] -> None
-  | [ x ] -> None
+  | [ _ ] -> None
   | x :: xs -> if find_one xs x then Some x else find_dup xs
 ;;
 
@@ -157,8 +158,8 @@ let is_well_formed (p : sourcespan program) : sourcespan program fallible =
     match e with
     | ESeq (e1, e2, _) -> wf_E e1 env @ wf_E e2 env
     | ETuple (es, _) -> List.concat (List.map (fun e -> wf_E e env) es)
-    | EGetItem (e, idx, pos) -> wf_E e env @ wf_E idx env
-    | ESetItem (e, idx, newval, pos) -> wf_E e env @ wf_E idx env @ wf_E newval env
+    | EGetItem (e, idx, _) -> wf_E e env @ wf_E idx env
+    | ESetItem (e, idx, newval, _) -> wf_E e env @ wf_E idx env @ wf_E newval env
     | ENil _ -> []
     | EBool _ -> []
     | EString _ -> []
@@ -210,7 +211,7 @@ let is_well_formed (p : sourcespan program) : sourcespan program fallible =
       let rec process_bindings bindings (env : scope_info name_envt) =
         match bindings with
         | [] -> env, []
-        | (b, e, loc) :: rest ->
+        | (b, e, _) :: rest ->
           let errs_e = wf_E e env in
           let env', errs = process_binds [ b ] env in
           let env'', errs' = process_bindings rest env' in
@@ -285,7 +286,7 @@ let is_well_formed (p : sourcespan program) : sourcespan program fallible =
       let rec process_bindings bindings env =
         match bindings with
         | [] -> env, []
-        | (b, e, loc) :: rest ->
+        | (b, e, _) :: rest ->
           let env, errs = process_binds [ b ] env in
           let errs_e = wf_E e env in
           let env', errs' = process_bindings rest env in
@@ -317,7 +318,7 @@ let is_well_formed (p : sourcespan program) : sourcespan program fallible =
           | None -> []
           | Some where -> [ DuplicateId (x, where, loc) ])
           @ process_args rest
-        | BTuple (binds, loc) :: rest -> process_args (binds @ rest)
+        | BTuple (binds, _) :: rest -> process_args (binds @ rest)
       in
       let rec flatten_bind (bind : sourcespan bind) : (string * scope_info) list =
         match bind with
@@ -346,7 +347,7 @@ let is_well_formed (p : sourcespan program) : sourcespan program fallible =
           | None -> []
           | Some where -> [ DuplicateId (x, where, loc) ])
           @ process_args rest
-        | BTuple (binds, loc) :: rest -> process_args (binds @ rest)
+        | BTuple (binds, _) :: rest -> process_args (binds @ rest)
       in
       let rec arg_env args (env : scope_info name_envt) =
         match args with
@@ -379,13 +380,13 @@ let is_well_formed (p : sourcespan program) : sourcespan program fallible =
     let rec find name (decls : 'a decl list) =
       match decls with
       | [] -> None
-      | DFun (n, args, _, loc) :: rest when n = name -> Some loc
+      | DFun (n, _, _, loc) :: _ when n = name -> Some loc
       | _ :: rest -> find name rest
     in
     let rec dupe_funbinds decls =
       match decls with
       | [] -> []
-      | DFun (name, args, _, loc) :: rest ->
+      | DFun (name, _, _, loc) :: rest ->
         (match find name rest with
         | None -> []
         | Some where -> [ DuplicateFun (name, where, loc) ])
@@ -463,7 +464,7 @@ let desugar (p : sourcespan program) : sourcespan program =
   and expandTuple binds tag source : sourcespan binding list =
     let tupleBind i b =
       match b with
-      | BBlank btag -> []
+      | BBlank _ -> []
       | BName (_, _, btag) ->
         [ b, EGetItem (source, ENumber (Int64.of_int i, dummy_srcspan), tag), btag ]
       | BTuple (binds, tag) ->
@@ -544,7 +545,7 @@ let rename_and_tag (p : tag program) : tag program =
       DFun (name, newArgs, helpE env' body, tag)
   and helpB env b =
     match b with
-    | BBlank tag -> b, env
+    | BBlank _ -> b, env
     | BName (name, allow_shadow, tag) ->
       let name' = sprintf "%s_%d" name tag in
       BName (name', allow_shadow, tag), (name, name') :: env
@@ -671,7 +672,7 @@ let anf (p : tag program) : unit aprogram =
                   (string_of_bind bind)))
       in
       let names, new_binds_setup = List.split (List.map processBind binds) in
-      let new_binds, new_setup = List.split new_binds_setup in
+      let new_binds, _ = List.split new_binds_setup in
       let body_ans, body_setup = helpC body in
       body_ans, BLetRec (List.combine names new_binds) :: body_setup
     | ELambda (args, body, _) ->
@@ -686,7 +687,7 @@ let anf (p : tag program) : unit aprogram =
                   (string_of_bind bind)))
       in
       CLambda (List.map processBind args, helpA body, ()), []
-    | ELet ((BTuple (binds, _), exp, _) :: rest, body, pos) ->
+    | ELet ((BTuple (_, _), _, _) :: _, _, _) ->
       raise (InternalCompilerError "Tuple bindings should have been desugared away")
     | EApp (func, args, native, _) ->
       let func_ans, func_setup = helpI func in
@@ -715,11 +716,13 @@ let anf (p : tag program) : unit aprogram =
     match e with
     | ENumber (n, _) -> ImmNum (n, ()), []
     | EBool (b, _) -> ImmBool (b, ()), []
-    | EString (s, _) -> ImmString (s, ()), []
     | EId (name, _) -> ImmId (name, ()), []
     | ENil _ -> ImmNil (), []
+    | EString (s, tag) -> 
+      let tmp = sprintf "string_literal_%d" tag in
+      ImmId (tmp, ()), [ BLet (tmp, CStringLiteral (s, ())) ]
     | ESeq (e1, e2, _) ->
-      let e1_imm, e1_setup = helpI e1 in
+      let _, e1_setup = helpI e1 in
       let e2_imm, e2_setup = helpI e2 in
       e2_imm, e1_setup @ e2_setup
     | ETuple (args, tag) ->
@@ -835,7 +838,7 @@ let anf (p : tag program) : unit aprogram =
       let exp_ans, exp_setup = helpC exp in
       let body_ans, body_setup = helpI (ELet (rest, body, pos)) in
       body_ans, exp_setup @ [ BLet (bind, exp_ans) ] @ body_setup
-    | ELet ((BTuple (binds, _), exp, _) :: rest, body, pos) ->
+    | ELet ((BTuple (_, _), _, _) :: _, _, _) ->
       raise (InternalCompilerError "Tuple bindings should have been desugared away")
   and helpA e : unit aexpr =
     let ans, ans_setup = helpC e in
@@ -877,6 +880,7 @@ let free_vars_sset (e : 'a aexpr) : StringSet.t =
     | ACExpr ce -> helpC ce
   and helpC (e : 'a cexpr) : StringSet.t =
     match e with
+    | CStringLiteral _ -> StringSet.empty
     | CLambda (args, body, _) ->
       let argsSet = StringSet.of_list args in
       let bodySet = helpA body in
@@ -1005,6 +1009,7 @@ let free_vars_cache (prog : 'a aprogram) : StringSet.t aprogram =
       let fve2 = helpI e2 in
       CPrim2 (o, fve1, fve2, StringSet.union (get_tag_imm fve1) (get_tag_imm fve2))
     | CImmExpr e -> CImmExpr (helpI e)
+    | CStringLiteral (s, _) -> CStringLiteral (s, StringSet.empty)
     | CTuple (l, _) ->
       let fvl = List.map (fun e -> helpI e) l in
       let fvt =
@@ -1018,7 +1023,6 @@ let free_vars_cache (prog : 'a aprogram) : StringSet.t aprogram =
     match e with
     | ImmId (n, _) -> ImmId (n, StringSet.add n StringSet.empty)
     | ImmBool (b, _) -> ImmBool (b, StringSet.empty)
-    | ImmString (s, _) -> ImmString (s, StringSet.empty)
     | ImmNil _ -> ImmNil StringSet.empty
     | ImmNum (n, _) -> ImmNum (n, StringSet.empty)
   in
@@ -1318,6 +1322,7 @@ let rec deepest_stack e env outer_env =
     | CIf (c, t, f, _, _) -> List.fold_left max 0 [ helpI c; helpA t; helpA f ]
     | CPrim1 (_, i, _) -> helpI i
     | CPrim2 (_, i1, i2, _) -> max (helpI i1) (helpI i2)
+    | CStringLiteral _ -> 0
     | CApp (_, args, _, _) -> List.fold_left max 0 (List.map helpI args)
     | CTuple (vals, _) -> List.fold_left max 0 (List.map helpI vals)
     | CGetItem (t, _, _) -> helpI t
@@ -1328,7 +1333,6 @@ let rec deepest_stack e env outer_env =
     match i with
     | ImmNil _ -> 0
     | ImmNum _ -> 0
-    | ImmString _ -> 0
     | ImmBool _ -> 0
     | ImmId (name, _) -> name_to_offset name
   and name_to_offset name =
@@ -1491,6 +1495,7 @@ and compile_cexpr
     ]
   in
   match e with
+  | CStringLiteral (s, _) -> compile_string_literal s
   | CIf (cond, thn, els, restrict, tag) ->
     let cond_reg = compile_imm cond env in
     let thn_ins = compile_aexpr thn env outer_env expr_metadata num_args in
