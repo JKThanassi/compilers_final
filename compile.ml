@@ -161,6 +161,7 @@ let is_well_formed (p : sourcespan program) : sourcespan program fallible =
     | ESetItem (e, idx, newval, pos) -> wf_E e env @ wf_E idx env @ wf_E newval env
     | ENil _ -> []
     | EBool _ -> []
+    | EString _ -> []
     | ENumber (n, loc) ->
       if n > Int64.div Int64.max_int 2L || n < Int64.div Int64.min_int 2L
       then [ Overflow (n, loc) ]
@@ -490,6 +491,7 @@ let desugar (p : sourcespan program) : sourcespan program =
     | EGetItem (e, idx, tag) -> EGetItem (helpE e, helpE idx, tag)
     | ESetItem (e, idx, newval, tag) -> ESetItem (helpE e, helpE idx, helpE newval, tag)
     | EId (x, tag) -> EId (x, tag)
+    | EString (s, tag) -> EString (s, tag)
     | ENumber (n, tag) -> ENumber (n, tag)
     | EBool (b, tag) -> EBool (b, tag)
     | ENil (t, tag) -> ENil (t, tag)
@@ -574,6 +576,7 @@ let rename_and_tag (p : tag program) : tag program =
     | EPrim1 (op, arg, tag) -> EPrim1 (op, helpE env arg, tag)
     | EPrim2 (op, left, right, tag) -> EPrim2 (op, helpE env left, helpE env right, tag)
     | EIf (c, t, f, tag) -> EIf (helpE env c, helpE env t, helpE env f, tag)
+    | EString _ -> e
     | ENumber _ -> e
     | EBool _ -> e
     | ENil _ -> e
@@ -712,6 +715,7 @@ let anf (p : tag program) : unit aprogram =
     match e with
     | ENumber (n, _) -> ImmNum (n, ()), []
     | EBool (b, _) -> ImmBool (b, ()), []
+    | EString (s, _) -> ImmString (s, ()), []
     | EId (name, _) -> ImmId (name, ()), []
     | ENil _ -> ImmNil (), []
     | ESeq (e1, e2, _) ->
@@ -1014,6 +1018,7 @@ let free_vars_cache (prog : 'a aprogram) : StringSet.t aprogram =
     match e with
     | ImmId (n, _) -> ImmId (n, StringSet.add n StringSet.empty)
     | ImmBool (b, _) -> ImmBool (b, StringSet.empty)
+    | ImmString (s, _) -> ImmString (s, StringSet.empty)
     | ImmNil _ -> ImmNil StringSet.empty
     | ImmNum (n, _) -> ImmNum (n, StringSet.empty)
   in
@@ -1323,6 +1328,7 @@ let rec deepest_stack e env outer_env =
     match i with
     | ImmNil _ -> 0
     | ImmNum _ -> 0
+    | ImmString _ -> 0
     | ImmBool _ -> 0
     | ImmId (name, _) -> name_to_offset name
   and name_to_offset name =

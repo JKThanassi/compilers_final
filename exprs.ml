@@ -73,6 +73,7 @@ type 'a immexpr =
   | ImmNum of int64 * 'a
   | ImmBool of bool * 'a
   | ImmId of string * 'a
+  | ImmString of string * 'a
   | ImmNil of 'a
 
 and 'a cexpr =
@@ -111,6 +112,7 @@ let get_tag_imm e =
   | ImmNum (_, t) -> t
   | ImmBool (_, t) -> t
   | ImmId (_, t) -> t
+  | ImmString (_, t) -> t
   | ImmNil t -> t
 ;;
 
@@ -138,6 +140,7 @@ let get_tag_aexpr e =
 let get_tag_E e =
   match e with
   | ELet (_, _, t) -> t
+  | EString (_, t) -> t
   | ELetRec (_, _, t) -> t
   | EPrim1 (_, _, t) -> t
   | EPrim2 (_, _, _, t) -> t
@@ -166,6 +169,7 @@ let rec map_tag_E (f : 'a -> 'b) (e : 'a expr) =
   | EGetItem (e, idx, a) -> EGetItem (map_tag_E f e, map_tag_E f idx, f a)
   | ESetItem (e, idx, newval, a) ->
     ESetItem (map_tag_E f e, map_tag_E f idx, map_tag_E f newval, f a)
+  | EString (s, a) -> EString (s, f a)
   | EId (x, a) -> EId (x, f a)
   | ENumber (n, a) -> ENumber (n, f a)
   | EBool (b, a) -> EBool (b, f a)
@@ -277,6 +281,7 @@ and untagE e =
   | ETuple (exprs, _) -> ETuple (List.map untagE exprs, ())
   | EGetItem (e, idx, _) -> EGetItem (untagE e, untagE idx, ())
   | ESetItem (e, idx, newval, _) -> ESetItem (untagE e, untagE idx, untagE newval, ())
+  | EString (s, _) -> EString (s, ())
   | EId (x, _) -> EId (x, ())
   | ENumber (n, _) -> ENumber (n, ())
   | EBool (b, _) -> EBool (b, ())
@@ -351,6 +356,7 @@ let atag (p : 'a aprogram) : tag aprogram =
     match i with
     | ImmNil _ -> ImmNil (tag ())
     | ImmId (x, _) -> ImmId (x, tag ())
+    | ImmString (s, _) -> ImmString (s, tag ())
     | ImmNum (n, _) -> ImmNum (n, tag ())
     | ImmBool (b, _) -> ImmBool (b, tag ())
   and helpP p =
