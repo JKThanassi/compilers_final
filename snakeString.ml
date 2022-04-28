@@ -52,16 +52,17 @@ let compile_string_literal
   reserve_instrs @ len_instr @ char_instrs @ tag_string_instrs @ padding_instrs
 ;;
 
-let check_is_string =
-  [ IMov (Reg R11, Reg RAX)
-  ; IAnd (Reg R11, HexConst string_tag_mask)
-  ; ICmp (Reg R11, HexConst string_tag)
-  ]
-;;
+(* let check_is_string = *)
+(*   [ IMov (Reg R11, Reg RAX) *)
+(*   ; IAnd (Reg R11, HexConst string_tag_mask) *)
+(*   ; ICmp (Reg R11, HexConst string_tag) *)
+(*   ] *)
+(* ;; *)
 
-let new_snake_string_of_size_fn reserve_fn: instruction list = 
-  let fn_preamble = [
-  IPush (Reg RBP) ;
-  IMov (Reg RBP, Reg RSP);
-  ] in
-  let string_instrs = compile_string_literal 
+(* let new_snake_string_of_size_fn (reserve_fn : int -> int -> instruction list) *)
+(*     : instruction list *)
+(*   = *)
+(*   let fn_preamble = [ IPush (Reg RBP); IMov (Reg RBP, Reg RSP) ] in *)
+(*   let reserve_instrs = reserve_fn  in *)
+(*   [] *)
+(* ;; *)

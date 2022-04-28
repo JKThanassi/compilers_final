@@ -1,4 +1,5 @@
 #include "snakeString.h"
+#include <bits/stdint-uintn.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -20,6 +21,35 @@ snakeStringComponents *ptrToComponents(uint64_t val) {
   toRet->contents = snakeStringStart;
   toRet->len = len;
   return toRet;
+}
+
+uint64_t newSnakeStringOfLen(uint64_t strLen) {
+  uint64_t *heapTop, *currFrame, *stackTop;
+  const int wordSize = 8;
+
+  uint64_t numWords = (strLen / wordSize) + 1;
+  numWords = ((strLen % wordSize) == 0) ? numWords : numWords + 1;
+  numWords = (numWords % 2) == 0 ? numWords : numWords + 1;
+
+  // TODO for when I come back:
+  // Make a function which will request the correct number of stack space rather than doing this horrible inline asm shit that doesnt work at all
+
+  asm volatile("movq %%r15, $0;"
+               "movq %%rbp, $1;"
+               "movq %%rsp, $2;"
+               : "=r"(heapTop), "=r"(currFrame), "=r"(stackTop));
+
+  uint64_t *newHeapTop =
+      try_gc(heapTop, numWords * wordSize, currFrame, stackTop);
+
+  asm volatile("movq $0, %%r15;" : : "r"(newHeapTop));
+  *newHeapTop = strLen;
+  memset(newHeapTop + 1, '\0', strLen);
+
+  int numBytes = numWords * wordSize;
+  asm volatile("addq $0, %%r15;" : : "m"(numBytes));
+  uint64_t taggedStr = ((uint64_t) newHeapTop) + SNAKE_STRING_TAG;
+  return taggedStr;
 }
 
 char *snakeStringToCString(uint64_t val) {
@@ -60,5 +90,9 @@ uint64_t snakeStringCmp(uint64_t s1, uint64_t s2) {
 uint64_t snakeStringConcat(uint64_t s1, uint64_t s2) {
   snakeStringComponents *s1c = ptrToComponents(s1);
   snakeStringComponents *s2c = ptrToComponents(s2);
-  strncat(char *, const char *, unsigned long);
+  uint64_t toRet = newSnakeStringOfLen(s1c->len + s2c->len);
+  snakeStringComponents *sDestC = ptrToComponents(toRet);
+  strncpy(sDestC->contents, s1c->contents, s1c->len);
+  strncpy(sDestC->contents + s1c->len, s2c->contents, s2c->len);
+  return toRet;
 }

@@ -1,6 +1,7 @@
 #ifndef SNAKE_STRING_H
 #define SNAKE_STRING_H
 
+#include <bits/stdint-uintn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -11,7 +12,14 @@ static const uint64_t SNAKE_STRING_TAG = 0x0000000000000007;
 static const uint64_t SNAKE_STRING_MASK = 0x000000000000000F;
 static const uint64_t ERR_VAL_NOT_STRING = 18;
 
-extern uint64_t newSnakeStringOfSize(uint64_t size) asm("newSnakeStringOfSize");
+// fwd decl of try_gc
+uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t bytes_needed, uint64_t *cur_frame, uint64_t *cur_stack_top);
+
+/**
+ * takes the number of words the snake string will occupy and the length of the string
+ * returns a tagged snake string and updates the heap pointer
+ */
+uint64_t newSnakeStringOfLen(uint64_t strLen);
 
 // forward decl of error
 void error(uint64_t code, uint64_t val);
