@@ -718,7 +718,7 @@ let anf (p : tag program) : unit aprogram =
     | EBool (b, _) -> ImmBool (b, ()), []
     | EId (name, _) -> ImmId (name, ()), []
     | ENil _ -> ImmNil (), []
-    | EString (s, tag) -> 
+    | EString (s, tag) ->
       let tmp = sprintf "string_literal_%d" tag in
       ImmId (tmp, ()), [ BLet (tmp, CStringLiteral (s, ())) ]
     | ESeq (e1, e2, _) ->
@@ -1495,7 +1495,7 @@ and compile_cexpr
     ]
   in
   match e with
-  | CStringLiteral (s, _) -> compile_string_literal s
+  | CStringLiteral (s, tag) -> compile_string_literal s tag reserve
   | CIf (cond, thn, els, restrict, tag) ->
     let cond_reg = compile_imm cond env in
     let thn_ins = compile_aexpr thn env outer_env expr_metadata num_args in
@@ -2077,6 +2077,9 @@ let compile_prog ((anfed : tag aprogram), (env : arg name_envt name_envt)) : str
       ; ICall (Label "error")
       ; ILabel "err_call_arity"
       ; IMov (Reg RDI, Const err_CALL_ARITY_ERR)
+      ; ICall (Label "error")
+      ; ILabel "err_val_not_string"
+      ; IMov (Reg RDI, Const err_VAL_NOT_STRING)
       ; ICall (Label "error")
       ]
     in

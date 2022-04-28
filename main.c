@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "gc.h"
+#include "snakeString.h"
 
 typedef uint64_t SNAKEVAL;
 
@@ -160,47 +161,14 @@ void printHelp(FILE *out, SNAKEVAL val)
     // Unmark this tuple: restore its length
     //*(addr) = len * 2; // length is encoded
   }
-  else if (val & TUPLE_TAG_MASK == FORWARDING_TAG)
+  else if (isSnakeString(val))
+  {
+    fprintf(out, "%s", snakeStringToCString(val));
+  }
+
+  else if ((val & TUPLE_TAG_MASK) == FORWARDING_TAG)
   {
     fprintf(out, "forwarding to %p", (uint64_t *)(val - FORWARDING_TAG));
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
-    return;
     return;
   }
   else
@@ -371,6 +339,10 @@ void error(uint64_t code, SNAKEVAL val)
     break;
   case ERR_GET_NOT_NUM:
     fprintf(stderr, "Error: tried to index into a tuple when getting with a value which is not a number: %ld, val: ", code);
+    printHelp(stderr, val);
+    break;
+  case ERR_VAL_NOT_STRING:
+    fprintf(stderr, "Error: Expected a string value: %ld, instead got val: ", code);
     printHelp(stderr, val);
     break;
   default:

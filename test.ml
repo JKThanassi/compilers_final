@@ -1271,7 +1271,12 @@ let reg_alloc_tests =
 ;;
 
 let string_tests =
-  [ teq "string_test_1" (ast_of_pos_program (parse_string "bruh" "\"hello there!\"")) "" ]
+  [ teq
+      "string_test_1"
+      (ast_of_pos_program (parse_string "bruh" "\"hello there!\""))
+      "\nEString<bruh, 1:13-1:14>(hello there!)"
+  ; t "string_test_only_string" "\"hello there\"" "" "hello there"
+  ]
 ;;
 
 let input = [ t "input1" "let x = input() in x + 2" "123" "125" ]
@@ -1280,14 +1285,13 @@ let () =
   run_test_tt_main
     ("all_tests"
     >::: string_tests
-         (*testing_tests*)
-         (* old_suite *)
-         (* @ pair_tests *)
-         (* (1* @ oom *1) *)
-         (* @ gc *)
-         (* @ input *)
-         (* @ interference *)
-         (* @ graph_coloring *)
-         (* @ reg_alloc_tests *)
-         (* @ [ input_file_test_suite () ] *))
+         @ old_suite
+         @ pair_tests
+         (* @ oom *)
+         @ gc
+         @ input
+         @ interference
+         @ graph_coloring
+         @ reg_alloc_tests
+         @ [ input_file_test_suite () ])
 ;;
