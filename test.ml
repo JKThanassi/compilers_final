@@ -1276,6 +1276,13 @@ let string_tests =
       (ast_of_pos_program (parse_string "bruh" "\"hello there!\""))
       "\nEString<bruh, 1:13-1:14>(hello there!)"
   ; t "string_test_only_string" "\"hello there\"" "" "hello there"
+  ; t
+      "string_test_only_string_much longer"
+      "\"hello there my name is joe. How are you? This is a loooooooooooooong string. \n\
+      \ even has a newline and slashes \\ \t and tabs\""
+      ""
+      "hello there my name is joe. How are you? This is a loooooooooooooong string. \n\
+      \ even has a newline and slashes \\ \t and tabs"
   ]
 ;;
 

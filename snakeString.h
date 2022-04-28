@@ -8,12 +8,17 @@
 #include <string.h>
 
 static const uint64_t SNAKE_STRING_TAG = 0x0000000000000007;
-static const uint64_t SNAKE_STRING_MASK = 0x0000000000000007;
+static const uint64_t SNAKE_STRING_MASK = 0x000000000000000F;
 static const uint64_t ERR_VAL_NOT_STRING = 18;
+
+extern uint64_t newSnakeStringOfSize(uint64_t size) asm("newSnakeStringOfSize");
 
 // forward decl of error
 void error(uint64_t code, uint64_t val);
 bool isSnakeString(uint64_t val);
+/**
+ * Converts snake strings to a null terminated char array.
+ */
 char *snakeStringToCString(uint64_t val);
 uint64_t snakeStringCmp(uint64_t s1, uint64_t s2);
 uint64_t snakeStringConcat(uint64_t s1, uint64_t s2);

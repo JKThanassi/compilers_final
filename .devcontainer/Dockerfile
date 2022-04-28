@@ -16,5 +16,5 @@ run echo "source ~/peda/peda.py" >> ~/.gdbinit
 RUN opam update && \
   opam install \
   ounit batteries dune \
-  ocamlformat ocaml-lsp-server extlib
+  ocamlformat ocaml-lsp-server extlib utop
 

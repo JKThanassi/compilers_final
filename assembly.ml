@@ -15,6 +15,7 @@ type reg =
   | R9
   | R10
   | R11
+  | R11b (** The 0th byte of the R11 register *)
   | R12
   | R13
   | R14
@@ -89,6 +90,7 @@ let r_to_asm (r : reg) : string =
   | R9 -> "R9"
   | R10 -> "R10"
   | R11 -> "R11"
+  | R11b -> "R11b" (*this is to get the 0th byte out of the r11 register*)
   | R12 -> "R12"
   | R13 -> "R13"
   | R14 -> "R14"
