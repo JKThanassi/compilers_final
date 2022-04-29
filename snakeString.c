@@ -1,7 +1,8 @@
 #include "snakeString.h"
+
 #include <bits/stdint-uintn.h>
-#include <stdint.h>
 #include <ctype.h>
+#include <stdint.h>
 #include <string.h>
 
 typedef struct {
@@ -15,8 +16,8 @@ snakeStringComponents *ptrToComponents(uint64_t val) {
   }
   uint64_t *snakeStringPtr = (uint64_t *)(val - SNAKE_STRING_TAG);
   char *snakeStringStart =
-      (char *)(snakeStringPtr +
-               1); // Offset by 1 word to get the characters stored in the tuple
+      (char *)(snakeStringPtr + 1);  // Offset by 1 word to get the characters
+                                     // stored in the tuple
   uint64_t len = snakeStringPtr[0];
   snakeStringComponents *toRet = malloc(sizeof(snakeStringComponents));
   toRet->contents = snakeStringStart;
@@ -85,16 +86,17 @@ uint64_t snakeStringConcat(uint64_t s1, uint64_t s2) {
 
 uint64_t snakeStringSubstring(uint64_t s1, uint64_t start, uint64_t end) {
   snakeStringComponents *s1c = ptrToComponents(s1);
-  uint64_t shiftedStart = ((int64_t) start) >> 1;
-  uint64_t shiftedEnd = ((int64_t) end) >> 1;
-  if (shiftedStart < 0 || shiftedEnd < 0 || shiftedEnd < shiftedStart || shiftedEnd > s1c->len) {
-    error(ERR_SUBSTRING_BAD_ARGS, start); 
+  uint64_t shiftedStart = ((int64_t)start) >> 1;
+  uint64_t shiftedEnd = ((int64_t)end) >> 1;
+  if (shiftedStart < 0 || shiftedEnd < 0 || shiftedEnd < shiftedStart ||
+      shiftedEnd > s1c->len) {
+    error(ERR_SUBSTRING_BAD_ARGS, start);
   }
   uint64_t len = shiftedEnd - shiftedStart;
   uint64_t dest = newSnakeStringOfLen(len);
   snakeStringComponents *destC = ptrToComponents(dest);
   strncpy(destC->contents, s1c->contents + shiftedStart, len);
-  return dest; 
+  return dest;
 }
 
 uint64_t snakeStringToUpper(uint64_t str) {

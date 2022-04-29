@@ -1,20 +1,26 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
+
 #include "gc.h"
 #include "snakeString.h"
 
 typedef uint64_t SNAKEVAL;
 
-extern SNAKEVAL our_code_starts_here(uint64_t *HEAP, uint64_t size) asm("our_code_starts_here");
+extern SNAKEVAL our_code_starts_here(uint64_t *HEAP,
+                                     uint64_t size) asm("our_code_starts_here");
 extern void error() asm("error");
-extern SNAKEVAL set_stack_bottom(uint64_t *stack_bottom) asm("?set_stack_bottom");
+extern SNAKEVAL set_stack_bottom(uint64_t *stack_bottom) asm(
+    "?set_stack_bottom");
 extern SNAKEVAL print(SNAKEVAL val) asm("print");
 extern SNAKEVAL input() asm("input");
-extern SNAKEVAL printStack(SNAKEVAL val, uint64_t *rsp, uint64_t *rbp, uint64_t args) asm("?print_stack");
+extern SNAKEVAL printStack(SNAKEVAL val, uint64_t *rsp, uint64_t *rbp,
+                           uint64_t args) asm("?print_stack");
 extern SNAKEVAL equal(SNAKEVAL val1, SNAKEVAL val2) asm("equal");
-extern uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t amount_needed, uint64_t *first_frame, uint64_t *stack_top) asm("?try_gc");
+extern uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t amount_needed,
+                        uint64_t *first_frame,
+                        uint64_t *stack_top) asm("?try_gc");
 extern uint64_t *HEAP_END asm("?HEAP_END");
 extern uint64_t *HEAP asm("?HEAP");
 
@@ -54,8 +60,7 @@ uint64_t *STACK_BOTTOM;
 uint64_t *HEAP;
 uint64_t *HEAP_END;
 
-SNAKEVAL set_stack_bottom(uint64_t *stack_bottom)
-{
+SNAKEVAL set_stack_bottom(uint64_t *stack_bottom) {
   STACK_BOTTOM = stack_bottom;
   return 0;
 }
@@ -65,54 +70,39 @@ uint64_t *FROM_E;
 uint64_t *TO_S;
 uint64_t *TO_E;
 
-SNAKEVAL equal(SNAKEVAL val1, SNAKEVAL val2)
-{
-  if (val1 == val2)
-  {
+SNAKEVAL equal(SNAKEVAL val1, SNAKEVAL val2) {
+  if (val1 == val2) {
     return BOOL_TRUE;
   }
-  if (val1 == NIL || val2 == NIL)
-  {
+  if (val1 == NIL || val2 == NIL) {
     return BOOL_FALSE;
   }
-  if ((val1 & TUPLE_TAG_MASK) == TUPLE_TAG && (val2 & TUPLE_TAG_MASK) == TUPLE_TAG)
-  {
+  if ((val1 & TUPLE_TAG_MASK) == TUPLE_TAG &&
+      (val2 & TUPLE_TAG_MASK) == TUPLE_TAG) {
     uint64_t *tup1 = (uint64_t *)(val1 - TUPLE_TAG);
     uint64_t *tup2 = (uint64_t *)(val2 - TUPLE_TAG);
-    if (tup1[0] != tup2[0])
-    {
+    if (tup1[0] != tup2[0]) {
       return BOOL_FALSE;
     }
-    for (uint64_t i = 1; i <= tup1[0]; i++)
-    {
-      if (equal(tup1[i], tup2[i]) == BOOL_FALSE)
-        return BOOL_FALSE;
+    for (uint64_t i = 1; i <= tup1[0]; i++) {
+      if (equal(tup1[i], tup2[i]) == BOOL_FALSE) return BOOL_FALSE;
     }
     return BOOL_TRUE;
   }
   return BOOL_FALSE;
 }
 
-void printHelp(FILE *out, SNAKEVAL val)
-{
-  if (val == NIL)
-  {
+void printHelp(FILE *out, SNAKEVAL val) {
+  if (val == NIL) {
     fprintf(out, "nil");
-  }
-  else if ((val & NUM_TAG_MASK) == NUM_TAG)
-  {
-    fprintf(out, "%ld", ((int64_t)val) >> 1); // deliberately int64, so that it's signed
-  }
-  else if (val == BOOL_TRUE)
-  {
+  } else if ((val & NUM_TAG_MASK) == NUM_TAG) {
+    fprintf(out, "%ld",
+            ((int64_t)val) >> 1);  // deliberately int64, so that it's signed
+  } else if (val == BOOL_TRUE) {
     fprintf(out, "true");
-  }
-  else if (val == BOOL_FALSE)
-  {
+  } else if (val == BOOL_FALSE) {
     fprintf(out, "false");
-  }
-  else if ((val & CLOSURE_TAG_MASK) == CLOSURE_TAG)
-  {
+  } else if ((val & CLOSURE_TAG_MASK) == CLOSURE_TAG) {
     uint64_t *addr = (uint64_t *)(val - CLOSURE_TAG);
     fprintf(out, "[%p - 5] ==> <function arity %ld, closed %ld, fn-ptr %p>",
             (uint64_t *)val, addr[0], addr[2], (uint64_t *)addr[1]);
@@ -133,11 +123,11 @@ void printHelp(FILE *out, SNAKEVAL val)
   /*   fflush(out); */
   /*   return; */
   /* } */
-  else if ((val & TUPLE_TAG_MASK) == TUPLE_TAG)
-  {
+  else if ((val & TUPLE_TAG_MASK) == TUPLE_TAG) {
     uint64_t *addr = (uint64_t *)(val - TUPLE_TAG);
     // Check whether we've visited this tuple already
-    /* if (!(addr >= FROM_S && addr < FROM_E) && !(addr >= TO_S && addr < TO_E)) { */
+    /* if (!(addr >= FROM_S && addr < FROM_E) && !(addr >= TO_S && addr < TO_E))
+     * { */
     /*   fprintf(out, "DANGLING POINTER %p", addr); */
     /*   return; */
     /* } */
@@ -149,38 +139,29 @@ void printHelp(FILE *out, SNAKEVAL val)
     /* fprintf(out, "%p-->(len=%d)", (int*)(val - 1), len / 2); */
     /* fflush(out); */
     fprintf(out, "(");
-    for (uint64_t i = 1; i <= len; i++)
-    {
-      if (i > 1)
-        fprintf(out, ", ");
+    for (uint64_t i = 1; i <= len; i++) {
+      if (i > 1) fprintf(out, ", ");
       printHelp(out, addr[i]);
     }
-    if (len == 1)
-      fprintf(out, ", ");
+    if (len == 1) fprintf(out, ", ");
     fprintf(out, ")");
     // Unmark this tuple: restore its length
     //*(addr) = len * 2; // length is encoded
-  }
-  else if (isSnakeString(val))
-  {
+  } else if (isSnakeString(val)) {
     char *tmp = snakeStringToCString(val);
     fprintf(out, "%s", tmp);
     free(tmp);
   }
 
-  else if ((val & TUPLE_TAG_MASK) == FORWARDING_TAG)
-  {
+  else if ((val & TUPLE_TAG_MASK) == FORWARDING_TAG) {
     fprintf(out, "forwarding to %p", (uint64_t *)(val - FORWARDING_TAG));
     return;
-  }
-  else
-  {
+  } else {
     fprintf(out, "Unknown value: %#018lx", val);
   }
 }
 
-SNAKEVAL printStack(SNAKEVAL val, uint64_t *rsp, uint64_t *rbp, uint64_t args)
-{
+SNAKEVAL printStack(SNAKEVAL val, uint64_t *rsp, uint64_t *rbp, uint64_t args) {
   printf("RSP: %#018lx\t==>  ", (uint64_t)rsp);
   fflush(stdout);
   printHelp(stdout, *rsp);
@@ -201,44 +182,29 @@ SNAKEVAL printStack(SNAKEVAL val, uint64_t *rsp, uint64_t *rbp, uint64_t args)
 
   uint64_t *origRsp = rsp;
 
-  if (rsp > rbp)
-  {
+  if (rsp > rbp) {
     printf("Error: RSP and RBP are not properly oriented\n");
     fflush(stdout);
-  }
-  else
-  {
-    for (uint64_t *cur = rsp; cur < STACK_BOTTOM + 3; cur++)
-    {
-      if (cur == STACK_BOTTOM)
-      {
+  } else {
+    for (uint64_t *cur = rsp; cur < STACK_BOTTOM + 3; cur++) {
+      if (cur == STACK_BOTTOM) {
         printf("BOT %#018lx: %#018lx\t==>  old rbp\n", (uint64_t)cur, *cur);
         fflush(stdout);
-      }
-      else if (cur == rbp)
-      {
+      } else if (cur == rbp) {
         printf("RBP %#018lx: %#018lx\t==>  old rbp\n", (uint64_t)cur, *cur);
         fflush(stdout);
-      }
-      else if (cur == origRsp)
-      {
+      } else if (cur == origRsp) {
         printf("    %#018lx: %#018lx\t==>  old rbp\n", (uint64_t)cur, *cur);
         fflush(stdout);
-      }
-      else if (cur == rbp + 1)
-      {
+      } else if (cur == rbp + 1) {
         printf("    %#018lx: %#018lx\t==>  saved ret\n", (uint64_t)cur, *cur);
         fflush(stdout);
         rsp = rbp + 2;
         rbp = (uint64_t *)(*rbp);
-      }
-      else if (cur == STACK_BOTTOM + 2)
-      {
+      } else if (cur == STACK_BOTTOM + 2) {
         printf("    %#018lx: %#018lx\t==>  heap\n", (uint64_t)cur, *cur);
         fflush(stdout);
-      }
-      else
-      {
+      } else {
         printf("    %#018lx: %#018lx\t==>  ", (uint64_t)cur, *cur);
         fflush(stdout);
         printHelp(stdout, *cur);
@@ -251,108 +217,111 @@ SNAKEVAL printStack(SNAKEVAL val, uint64_t *rsp, uint64_t *rbp, uint64_t args)
   return val;
 }
 
-SNAKEVAL input()
-{
+SNAKEVAL input() {
   char temp[30];
   scanf("%29s", temp);
-  if (strcmp(temp, "true") == 0)
-  {
+  if (strcmp(temp, "true") == 0) {
     return BOOL_TRUE;
-  }
-  else if (strcmp(temp, "false") == 0)
-  {
+  } else if (strcmp(temp, "false") == 0) {
     return BOOL_FALSE;
-  }
-  else
-  {
+  } else {
     int64_t iTmp;
     sscanf(temp, "%ld", &iTmp);
     return iTmp << 1;
   }
 }
 
-SNAKEVAL print(SNAKEVAL val)
-{
+SNAKEVAL print(SNAKEVAL val) {
   printHelp(stdout, val);
   printf("\n");
   fflush(stdout);
   return val;
 }
 
-void error(uint64_t code, SNAKEVAL val)
-{
-  switch (code)
-  {
-  case ERR_COMP_NOT_NUM:
-    fprintf(stderr, "Error: comparison expected a number, got ");
-    printHelp(stderr, val);
-    break;
-  case ERR_ARITH_NOT_NUM:
-    fprintf(stderr, "Error: arithmetic expected a number, got ");
-    printHelp(stderr, val);
-    break;
-  case ERR_LOGIC_NOT_BOOL:
-    fprintf(stderr, "Error: logic expected a boolean, got ");
-    printHelp(stderr, val);
-    break;
-  case ERR_IF_NOT_BOOL:
-    fprintf(stderr, "Error: if expected a boolean, got ");
-    printHelp(stderr, val);
-    break;
-  case ERR_OVERFLOW:
-    fprintf(stderr, "Error: Integer overflow, got ");
-    printHelp(stderr, val);
-    break;
-  case ERR_GET_NOT_TUPLE:
-    fprintf(stderr, "Error: get expected tuple, got ");
-    printHelp(stderr, val);
-    break;
-  case ERR_GET_LOW_INDEX:
-    fprintf(stderr, "Error: index too small to get, got %ld\n", (uint64_t)val);
-    break;
-  case ERR_GET_HIGH_INDEX:
-    fprintf(stderr, "Error: index too large to get, got %ld\n", (uint64_t)val);
-    break;
-  case ERR_NIL_DEREF:
-    fprintf(stderr, "Error: tried to access component of nil\n");
-    break;
-  case ERR_OUT_OF_MEMORY:
-    fprintf(stderr, "Error: out of memory\n");
-    break;
-  case ERR_SET_NOT_TUPLE:
-    fprintf(stderr, "Error: set expected tuple\n");
-    break;
-  case ERR_SET_LOW_INDEX:
-    fprintf(stderr, "Error: index too small to set\n");
-    break;
-  case ERR_SET_HIGH_INDEX:
-    fprintf(stderr, "Error: index too large to set\n");
-    break;
-  case ERR_CALL_NOT_CLOSURE:
-    fprintf(stderr, "Error: tried to call a non-closure value: ");
-    printHelp(stderr, val);
-    break;
-  case ERR_CALL_ARITY_ERR:
-    fprintf(stderr, "Error: arity mismatch in call\n");
-    break;
-  case ERR_SET_NOT_NUM:
-    fprintf(stderr, "Error: tried to index into a tuple when setting with a value which is not a number: %ld, val: ", code);
-    printHelp(stderr, val);
-    break;
-  case ERR_GET_NOT_NUM:
-    fprintf(stderr, "Error: tried to index into a tuple when getting with a value which is not a number: %ld, val: ", code);
-    printHelp(stderr, val);
-    break;
-  case ERR_VAL_NOT_STRING:
-    fprintf(stderr, "Error: Expected a string value: %ld, instead got val: ", code);
-    printHelp(stderr, val);
-    break;
-  case ERR_SUBSTRING_BAD_ARGS:
-    fprintf(stderr, "Error: Substring requires that start/end > 0, start <= end, and end <= len of str: %ld", code);
-    break;
-  default:
-    fprintf(stderr, "Error: Unknown error code: %ld, val: ", code);
-    printHelp(stderr, val);
+void error(uint64_t code, SNAKEVAL val) {
+  switch (code) {
+    case ERR_COMP_NOT_NUM:
+      fprintf(stderr, "Error: comparison expected a number, got ");
+      printHelp(stderr, val);
+      break;
+    case ERR_ARITH_NOT_NUM:
+      fprintf(stderr, "Error: arithmetic expected a number, got ");
+      printHelp(stderr, val);
+      break;
+    case ERR_LOGIC_NOT_BOOL:
+      fprintf(stderr, "Error: logic expected a boolean, got ");
+      printHelp(stderr, val);
+      break;
+    case ERR_IF_NOT_BOOL:
+      fprintf(stderr, "Error: if expected a boolean, got ");
+      printHelp(stderr, val);
+      break;
+    case ERR_OVERFLOW:
+      fprintf(stderr, "Error: Integer overflow, got ");
+      printHelp(stderr, val);
+      break;
+    case ERR_GET_NOT_TUPLE:
+      fprintf(stderr, "Error: get expected tuple, got ");
+      printHelp(stderr, val);
+      break;
+    case ERR_GET_LOW_INDEX:
+      fprintf(stderr, "Error: index too small to get, got %ld\n",
+              (uint64_t)val);
+      break;
+    case ERR_GET_HIGH_INDEX:
+      fprintf(stderr, "Error: index too large to get, got %ld\n",
+              (uint64_t)val);
+      break;
+    case ERR_NIL_DEREF:
+      fprintf(stderr, "Error: tried to access component of nil\n");
+      break;
+    case ERR_OUT_OF_MEMORY:
+      fprintf(stderr, "Error: out of memory\n");
+      break;
+    case ERR_SET_NOT_TUPLE:
+      fprintf(stderr, "Error: set expected tuple\n");
+      break;
+    case ERR_SET_LOW_INDEX:
+      fprintf(stderr, "Error: index too small to set\n");
+      break;
+    case ERR_SET_HIGH_INDEX:
+      fprintf(stderr, "Error: index too large to set\n");
+      break;
+    case ERR_CALL_NOT_CLOSURE:
+      fprintf(stderr, "Error: tried to call a non-closure value: ");
+      printHelp(stderr, val);
+      break;
+    case ERR_CALL_ARITY_ERR:
+      fprintf(stderr, "Error: arity mismatch in call\n");
+      break;
+    case ERR_SET_NOT_NUM:
+      fprintf(stderr,
+              "Error: tried to index into a tuple when setting with a value "
+              "which is not a number: %ld, val: ",
+              code);
+      printHelp(stderr, val);
+      break;
+    case ERR_GET_NOT_NUM:
+      fprintf(stderr,
+              "Error: tried to index into a tuple when getting with a value "
+              "which is not a number: %ld, val: ",
+              code);
+      printHelp(stderr, val);
+      break;
+    case ERR_VAL_NOT_STRING:
+      fprintf(stderr,
+              "Error: Expected a string value: %ld, instead got val: ", code);
+      printHelp(stderr, val);
+      break;
+    case ERR_SUBSTRING_BAD_ARGS:
+      fprintf(stderr,
+              "Error: Substring requires that start/end > 0, start <= end, and "
+              "end <= len of str: %ld",
+              code);
+      break;
+    default:
+      fprintf(stderr, "Error: Unknown error code: %ld, val: ", code);
+      printHelp(stderr, val);
   }
   fprintf(stderr, "\n%p ==> ", (uint64_t *)val);
   printHelp(stderr, val);
@@ -372,24 +341,22 @@ void error(uint64_t code, SNAKEVAL val)
 
   Arguments:
 
-    uint64_t* alloc_ptr - the current top of the heap (which we store in R15), where
-                          the next allocation should occur, if possible
-    uint64_t bytes_needed - the number of bytes of memory we want to allocate
-                            (including padding)
-    uint64_t* cur_frame - the base pointer of the topmost stack frame of our code
-                          (i.e., RBP)
-    uint64_t* cur_stack_top - the stack pointer of the topmost stack frame of our
-                              code (i.e., RSP)
+    uint64_t* alloc_ptr - the current top of the heap (which we store in R15),
+  where the next allocation should occur, if possible uint64_t bytes_needed -
+  the number of bytes of memory we want to allocate (including padding)
+    uint64_t* cur_frame - the base pointer of the topmost stack frame of our
+  code (i.e., RBP) uint64_t* cur_stack_top - the stack pointer of the topmost
+  stack frame of our code (i.e., RSP)
 
   Returns:
-    The new top of the heap (i.e. the new value of R15) after garbage collection.
-    Does not actually allocate bytes_needed space.
+    The new top of the heap (i.e. the new value of R15) after garbage
+  collection. Does not actually allocate bytes_needed space.
 
   Side effect:
     Also updates HEAP_END to point to the new end of the heap, if it's changed
 */
-uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t bytes_needed, uint64_t *cur_frame, uint64_t *cur_stack_top)
-{
+uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t bytes_needed,
+                 uint64_t *cur_frame, uint64_t *cur_stack_top) {
   uint64_t *new_heap = (uint64_t *)calloc(HEAP_SIZE + 15, sizeof(uint64_t));
   uint64_t *old_heap = HEAP;
   uint64_t *old_heap_end = HEAP_END;
@@ -402,70 +369,67 @@ uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t bytes_needed, uint64_t *cur_frame
   TO_S = new_r15;
   TO_E = new_heap_end;
 
-  // printf("FROM_S = %p, FROM_E = %p, TO_S = %p, TO_E = %p\n", FROM_S, FROM_E, TO_S, TO_E);
-  // naive_print_heap(FROM_S, FROM_E);
-  // printStack(BOOL_TRUE, cur_stack_top, cur_frame, 0);
+  // printf("FROM_S = %p, FROM_E = %p, TO_S = %p, TO_E = %p\n", FROM_S, FROM_E,
+  // TO_S, TO_E); naive_print_heap(FROM_S, FROM_E); printStack(BOOL_TRUE,
+  // cur_stack_top, cur_frame, 0);
 
   // Abort early, if we can't allocate a new to-space
-  if (new_heap == NULL)
-  {
-    fprintf(stderr, "Out of memory: could not allocate a new semispace for garbage collection\n");
+  if (new_heap == NULL) {
+    fprintf(stderr,
+            "Out of memory: could not allocate a new semispace for garbage "
+            "collection\n");
     fflush(stderr);
-    if (old_heap != NULL)
-      free(old_heap);
+    if (old_heap != NULL) free(old_heap);
     exit(ERR_OUT_OF_MEMORY);
   }
 
-  new_r15 = gc(STACK_BOTTOM, cur_frame, cur_stack_top, FROM_S, HEAP_END, new_r15);
+  new_r15 =
+      gc(STACK_BOTTOM, cur_frame, cur_stack_top, FROM_S, HEAP_END, new_r15);
   HEAP = new_heap;
   HEAP_END = new_heap_end;
   free(old_heap);
 
-  // Note: strict greater-than is correct here: if new_r15 + (bytes_needed / 8) == HEAP_END,
-  // that does not mean we're *using* the byte at HEAP_END, but rather that it would be the
-  // next free byte, which is still ok and not a heap-overflow.
-  if (bytes_needed / sizeof(uint64_t) > HEAP_SIZE)
-  {
-    fprintf(stderr, "Allocation error: needed %ld words, but the heap is only %ld words\n",
-            bytes_needed / sizeof(uint64_t), HEAP_SIZE);
+  // Note: strict greater-than is correct here: if new_r15 + (bytes_needed / 8)
+  // == HEAP_END, that does not mean we're *using* the byte at HEAP_END, but
+  // rather that it would be the next free byte, which is still ok and not a
+  // heap-overflow.
+  if (bytes_needed / sizeof(uint64_t) > HEAP_SIZE) {
+    fprintf(
+        stderr,
+        "Allocation error: needed %ld words, but the heap is only %ld words\n",
+        bytes_needed / sizeof(uint64_t), HEAP_SIZE);
     fflush(stderr);
-    if (new_heap != NULL)
-      free(new_heap);
+    if (new_heap != NULL) free(new_heap);
     exit(ERR_OUT_OF_MEMORY);
-  }
-  else if ((new_r15 + (bytes_needed / sizeof(uint64_t))) > HEAP_END)
-  {
-    fprintf(stderr, "Out of memory: needed %ld words, but only %ld remain after collection\n",
+  } else if ((new_r15 + (bytes_needed / sizeof(uint64_t))) > HEAP_END) {
+    fprintf(stderr,
+            "Out of memory: needed %ld words, but only %ld remain after "
+            "collection\n",
             bytes_needed / sizeof(uint64_t), (HEAP_END - new_r15));
     fflush(stderr);
-    if (new_heap != NULL)
-      free(new_heap);
+    if (new_heap != NULL) free(new_heap);
     exit(ERR_OUT_OF_MEMORY);
-  }
-  else
-  {
+  } else {
     fprintf(stderr, "new_r15 = %p\n", new_r15);
     // naive_print_heap(HEAP, HEAP_END);
     return new_r15;
   }
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   HEAP_SIZE = 100000;
-  if (argc > 1)
-  {
+  if (argc > 1) {
     HEAP_SIZE = atoi(argv[1]);
   }
-  if (HEAP_SIZE < 0 || HEAP_SIZE > 1000000)
-  {
+  if (HEAP_SIZE < 0 || HEAP_SIZE > 1000000) {
     HEAP_SIZE = 0;
   }
   HEAP = (uint64_t *)calloc(HEAP_SIZE + 15, sizeof(uint64_t));
 
   uint64_t *aligned = (uint64_t *)(((uint64_t)HEAP + 15) & ~0xF);
   HEAP_END = aligned + HEAP_SIZE;
-  // printf("HEAP = %p, aligned = %p, HEAP_END = %p\n", HEAP, aligned, HEAP_END);
+  // printf("HEAP = %p, aligned = %p, HEAP_END = %p\n", HEAP, aligned,
+  // HEAP_END);
   SNAKEVAL result = our_code_starts_here(aligned, HEAP_SIZE);
   // naive_print_heap(aligned, HEAP_END);
   /* smarter_print_heap(aligned, HEAP_END, TO_S, TO_E); */
