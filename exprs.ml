@@ -86,7 +86,7 @@ and 'a cexpr =
   | CGetItem of 'a immexpr * 'a immexpr * 'a
   | CSetItem of 'a immexpr * 'a immexpr * 'a immexpr * 'a
   | CLambda of string list * 'a aexpr * 'a
-  | CStringLiteral of string * 'a 
+  | CStringLiteral of string * 'a
 
 and 'a aexpr =
   (* anf expressions *)
@@ -327,7 +327,7 @@ let atag (p : 'a aprogram) : tag aprogram =
     | ACExpr c -> ACExpr (helpC c)
   and helpC (c : 'a cexpr) : tag cexpr =
     match c with
-    | CStringLiteral (s, _) -> 
+    | CStringLiteral (s, _) ->
       let prim_tag = tag () in
       CStringLiteral (s, prim_tag)
     | CPrim1 (op, e, _) ->

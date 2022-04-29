@@ -9,7 +9,7 @@
             "cwd": ".",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/output/string_test_only_string.run",
+            "program": "${workspaceRoot}/output/string_test_substring.run",
             "stopAtEntry": false,
             "linux": {
                 "MIMode": "gdb",

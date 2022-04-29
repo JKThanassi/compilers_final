@@ -1270,7 +1270,7 @@ let reg_alloc_tests =
   ]
 ;;
 
-let string_tests =
+let string_tests_passing =
   [ teq
       "string_test_1"
       (ast_of_pos_program (parse_string "bruh" "\"hello there!\""))
@@ -1283,6 +1283,31 @@ let string_tests =
       ""
       "hello there my name is joe. How are you? This is a loooooooooooooong string. \n\
       \ even has a newline and slashes \\ \t and tabs"
+  ; t
+      "string_test_concat"
+      "let a = \"hello \", b = \"there\" in snakeStringConcat(a, b)"
+      ""
+      "hello there"
+  ; t "string_test_cmp_same" "snakeStringCmp(\"abcdefg\", \"abcdefg\")" "" "0"
+  ; t "string_test_cmp_less_than" "snakeStringCmp(\"abcde\", \"abcdefg\")" "" "-1"
+  ; t "string_test_cmp_greater_than" "snakeStringCmp(\"abcdefg\", \"abcd\")" "" "1"
+  ; t "string_test_cmp_same_len_g_t" "snakeStringCmp(\"gggaazz\", \"gggaaaa\")" "" "25"
+  ; t "string_test_cmp_same_len_l_t" "snakeStringCmp(\"gggaaaa\", \"gggaazz\")" "" "-25"
+  ; t
+      "string_test_substring"
+      "snakeStringSubstring(\"what is good everyone\", 13, 21)"
+      ""
+      "everyone"
+  ; t
+      "string_test_substring_same_start_end"
+      "snakeStringSubstring(\"what is good everyone\", 1, 1)"
+      ""
+      ""
+  ; t
+      "string_test_substring_one_char"
+      "snakeStringSubstring(\"what is good everyone\", 0, 1)"
+      ""
+      "w"
   ]
 ;;
 
@@ -1291,7 +1316,7 @@ let input = [ t "input1" "let x = input() in x + 2" "123" "125" ]
 let () =
   run_test_tt_main
     ("all_tests"
-    >::: string_tests
+    >::: string_tests_passing
          @ old_suite
          @ pair_tests
          (* @ oom *)

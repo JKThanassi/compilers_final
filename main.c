@@ -347,6 +347,9 @@ void error(uint64_t code, SNAKEVAL val)
     fprintf(stderr, "Error: Expected a string value: %ld, instead got val: ", code);
     printHelp(stderr, val);
     break;
+  case ERR_SUBSTRING_BAD_ARGS:
+    fprintf(stderr, "Error: Substring requires that start/end > 0, start <= end, and end <= len of str: %ld", code);
+    break;
   default:
     fprintf(stderr, "Error: Unknown error code: %ld, val: ", code);
     printHelp(stderr, val);

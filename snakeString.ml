@@ -1,8 +1,17 @@
+open Printf
+open Exprs
 open Assembly
 
 let string_tag = 0x0000000000000007L
 let string_tag_mask = 0x000000000000000FL
 let err_VAL_NOT_STRING = 18L
+
+let string_native_bindings =
+  [ "snakeStringCmp", (Native, 2)
+  ; "snakeStringConcat", (Native, 2)
+  ; "snakeStringSubstring", (Native, 3)
+  ]
+;;
 
 (** This function will take the string length and return the number of words needed to fit the chars.
     Takes into account the 1 word needed for the string length and will pad so the address is 16byte aligned *)
@@ -52,17 +61,53 @@ let compile_string_literal
   reserve_instrs @ len_instr @ char_instrs @ tag_string_instrs @ padding_instrs
 ;;
 
-(* let check_is_string = *)
-(*   [ IMov (Reg R11, Reg RAX) *)
-(*   ; IAnd (Reg R11, HexConst string_tag_mask) *)
-(*   ; ICmp (Reg R11, HexConst string_tag) *)
-(*   ] *)
-(* ;; *)
+let check_is_string =
+  [ IMov (Reg R11, Reg RAX)
+  ; IAnd (Reg R11, HexConst string_tag_mask)
+  ; ICmp (Reg R11, HexConst string_tag)
+  ]
+;;
 
-(* let new_snake_string_of_size_fn (reserve_fn : int -> int -> instruction list) *)
-(*     : instruction list *)
-(*   = *)
-(*   let fn_preamble = [ IPush (Reg RBP); IMov (Reg RBP, Reg RSP) ] in *)
-(*   let reserve_instrs = reserve_fn  in *)
-(*   [] *)
-(* ;; *)
+let new_snake_string_of_size_fn (native_call : arg -> arg list -> instruction list)
+    : instruction list
+  =
+  let label = [ ILabel "create_empty_snake_str" ] in
+  let fn_preamble = [ IPush (Reg RBP); IMov (Reg RBP, Reg RSP) ] in
+  let ok = "$memcheck_empty_snake_str" in
+  (*-1 here since we know that any other tag will be positive*)
+  let reserve_instrs =
+    [ IMov (Reg RAX, LabelContents "?HEAP_END")
+      (* rdi contains the number of bytes to reserve *)
+    ; ISub (Reg RAX, Reg RDI)
+    ; ICmp (Reg RAX, Reg R15)
+    ; IJge (Label ok)
+    ]
+    @ native_call
+        (Label "?try_gc")
+        [ Sized (QWORD_PTR, Reg R15)
+        ; (* alloc_ptr in C *)
+          Sized (QWORD_PTR, Reg RDI)
+        ; (* bytes_needed in C *)
+          Sized (QWORD_PTR, Reg RBP)
+        ; (* first_frame in C *)
+          Sized (QWORD_PTR, Reg RSP) (* stack_top in C *)
+        ]
+    @ [ IInstrComment
+          ( IMov (Reg R15, Reg RAX)
+          , "assume gc success if returning here, so RAX holds the new heap_reg value" )
+      ; ILabel ok
+      ]
+  in
+  let load_str_len_in_first_slot =
+    [ (* rsi contains the length of the string in a machine integer *)
+      IMov (RegOffset (0, R15), Reg RSI)
+    ; IMov (Reg RAX, Reg R15)
+    ; IAdd (Reg R15, Reg RDI)
+    ]
+  in
+  label
+  @ fn_preamble
+  @ reserve_instrs
+  @ load_str_len_in_first_slot
+  @ [ IMov (Reg RSP, Reg RBP); IPop (Reg RBP); IRet ]
+;;

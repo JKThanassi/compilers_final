@@ -236,8 +236,7 @@ and string_of_cexpr_with (depth : int) (print_a : 'a -> string) (c : 'a cexpr) :
   then "..."
   else (
     match c with
-    | CStringLiteral (s, a) -> 
-      sprintf "(\"%s\")%s" s (print_a a)
+    | CStringLiteral (s, a) -> sprintf "(\"%s\")%s" s (print_a a)
     | CTuple (imms, a) ->
       sprintf
         "(%s)%s"

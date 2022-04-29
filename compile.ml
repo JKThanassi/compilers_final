@@ -73,6 +73,7 @@ let prim_bindings = []
 
 let native_fun_bindings =
   [ "print", (Native, 1); "input", (Native, 0); "equal", (Native, 2) ]
+  @ string_native_bindings
 ;;
 
 let initial_val_env = native_fun_bindings
@@ -2112,6 +2113,7 @@ let compile_prog ((anfed : tag aprogram), (env : arg name_envt name_envt)) : str
       @ prog_body
       @ body_postscript
       @ builtins
+      @ new_snake_string_of_size_fn native_call
     in
     let ext_setup =
       "section .text\n\
@@ -2122,8 +2124,12 @@ let compile_prog ((anfed : tag aprogram), (env : arg name_envt name_envt)) : str
        extern ?try_gc\n\
        extern ?HEAP_END\n\
        extern ?HEAP\n\
+       extern snakeStringCmp\n\
+       extern snakeStringConcat\n\
+       extern snakeStringSubstring\n\
        extern ?set_stack_bottom\n\
        global our_code_starts_here\n\
+       global create_empty_snake_str\n\
       \ "
     in
     let prog_str = to_asm all_ins in

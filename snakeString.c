@@ -1,4 +1,5 @@
 #include "snakeString.h"
+#include <bits/stdint-intn.h>
 #include <bits/stdint-uintn.h>
 #include <stdint.h>
 #include <string.h>
@@ -31,24 +32,9 @@ uint64_t newSnakeStringOfLen(uint64_t strLen) {
   numWords = ((strLen % wordSize) == 0) ? numWords : numWords + 1;
   numWords = (numWords % 2) == 0 ? numWords : numWords + 1;
 
-  // TODO for when I come back:
-  // Make a function which will request the correct number of stack space rather than doing this horrible inline asm shit that doesnt work at all
-
-  asm volatile("movq %%r15, $0;"
-               "movq %%rbp, $1;"
-               "movq %%rsp, $2;"
-               : "=r"(heapTop), "=r"(currFrame), "=r"(stackTop));
-
-  uint64_t *newHeapTop =
-      try_gc(heapTop, numWords * wordSize, currFrame, stackTop);
-
-  asm volatile("movq $0, %%r15;" : : "r"(newHeapTop));
-  *newHeapTop = strLen;
-  memset(newHeapTop + 1, '\0', strLen);
-
   int numBytes = numWords * wordSize;
-  asm volatile("addq $0, %%r15;" : : "m"(numBytes));
-  uint64_t taggedStr = ((uint64_t) newHeapTop) + SNAKE_STRING_TAG;
+  uint64_t untaggedStr = create_empty_snake_str(numBytes, strLen);
+  uint64_t taggedStr = untaggedStr + SNAKE_STRING_TAG;
   return taggedStr;
 }
 
@@ -95,4 +81,18 @@ uint64_t snakeStringConcat(uint64_t s1, uint64_t s2) {
   strncpy(sDestC->contents, s1c->contents, s1c->len);
   strncpy(sDestC->contents + s1c->len, s2c->contents, s2c->len);
   return toRet;
+}
+
+uint64_t snakeStringSubstring(uint64_t s1, uint64_t start, uint64_t end) {
+  snakeStringComponents *s1c = ptrToComponents(s1);
+  uint64_t shiftedStart = ((int64_t) start) >> 1;
+  uint64_t shiftedEnd = ((int64_t) end) >> 1;
+  if (shiftedStart < 0 || shiftedEnd < 0 || shiftedEnd < shiftedStart || shiftedEnd > s1c->len) {
+    error(ERR_SUBSTRING_BAD_ARGS, start); 
+  }
+  uint64_t len = shiftedEnd - shiftedStart;
+  uint64_t dest = newSnakeStringOfLen(len);
+  snakeStringComponents *destC = ptrToComponents(dest);
+  strncpy(destC->contents, s1c->contents + shiftedStart, len);
+  return dest; 
 }
