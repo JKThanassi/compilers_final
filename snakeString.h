@@ -14,6 +14,7 @@ static const uint64_t ERR_VAL_NOT_STRING = 18;
 static const uint64_t ERR_SUBSTRING_BAD_ARGS = 19;
 
 
+
 // fwd decl of try_gc
 uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t bytes_needed, uint64_t *cur_frame, uint64_t *cur_stack_top);
 
@@ -32,9 +33,30 @@ bool isSnakeString(uint64_t val);
  * Converts snake strings to a null terminated char array.
  */
 char *snakeStringToCString(uint64_t val);
+/**
+ * Lexographically compares two strings.
+ *
+ * Args:
+ * s1: A snakeString 
+ * s2: A snakeString which will be compared to s1
+ *
+ * returns: a positive snakeNum if s1 is greater than s2, a negative snakeNum if s2 is greater than s1, and 0 if they are equal.
+ */
 extern uint64_t snakeStringCmp(uint64_t s1, uint64_t s2) asm("snakeStringCmp");
+/**
+ * Args:
+ * s1: A snakeString to be contatenated to 
+ * s2: A snakeString which will be contatenated to s1
+ * 
+ * returns: A new snakeString containing the contents of s1 appended to s2
+ */
 extern uint64_t snakeStringConcat(uint64_t s1, uint64_t s2) asm("snakeStringConcat");
 /**
+ * Args:
+ * s1: the snakeString to take the substring of
+ * start: the snake num representing the start of the substring. (0 indexed, inclusive)
+ * end: the snake num representing the end of the substring (exclusive)
+ *
  * start must be > 0, end must be > 0 and end > start
  * end must be less than the length of the string
  * if these conditions are not met an error will be thrown
@@ -42,7 +64,6 @@ extern uint64_t snakeStringConcat(uint64_t s1, uint64_t s2) asm("snakeStringConc
  */
 uint64_t snakeStringSubstring(uint64_t s1, uint64_t start, uint64_t end) asm("snakeStringSubstring");
 uint64_t snakeStringIdxOf(uint64_t str, uint64_t toSeek);
-uint64_t snakeStringSplit(uint64_t str, uint64_t idx);
 uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace, uint64_t replaceWith);
 uint64_t snakeStringContains(uint64_t str, uint64_t contains);
 uint64_t snakeStringToUpper(uint64_t str);

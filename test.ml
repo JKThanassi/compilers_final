@@ -1308,6 +1308,21 @@ let string_tests_passing =
       "snakeStringSubstring(\"what is good everyone\", 0, 1)"
       ""
       "w"
+  ; t
+      "string_test_to_upper"
+      "snakeStringToUpper(\"whats up this is now uppercase\")"
+      ""
+      "WHATS UP THIS IS NOW UPPERCASE"
+  ; t
+      "string_test_to_lower"
+      "snakeStringToLower(\"WHATS UP THIS IS NOW LOWERCASE\")"
+      ""
+      "whats up this is now lowercase"
+  ; t
+      "string_test_trim"
+      "snakeStringTrim(\"       lots of padding on either side    \")"
+      ""
+      "lots of padding on either side"
   ]
 ;;
 

@@ -1,7 +1,7 @@
 #include "snakeString.h"
-#include <bits/stdint-intn.h>
 #include <bits/stdint-uintn.h>
 #include <stdint.h>
+#include <ctype.h>
 #include <string.h>
 
 typedef struct {
@@ -95,4 +95,38 @@ uint64_t snakeStringSubstring(uint64_t s1, uint64_t start, uint64_t end) {
   snakeStringComponents *destC = ptrToComponents(dest);
   strncpy(destC->contents, s1c->contents + shiftedStart, len);
   return dest; 
+}
+
+uint64_t snakeStringToUpper(uint64_t str) {
+  snakeStringComponents *strC = ptrToComponents(str);
+  for (int i = 0; i < strC->len; i++) {
+    strC->contents[i] = toupper(strC->contents[i]);
+  }
+  return str;
+}
+
+uint64_t snakeStringToLower(uint64_t str) {
+  snakeStringComponents *strC = ptrToComponents(str);
+  for (int i = 0; i < strC->len; i++) {
+    strC->contents[i] = tolower(strC->contents[i]);
+  }
+  return str;
+}
+
+uint64_t snakeStringTrim(uint64_t str) {
+  snakeStringComponents *strC = ptrToComponents(str);
+  if (strC->len == 0) return str;
+
+  int startIdx = 0;
+  while (isspace(strC->contents[startIdx])) startIdx++;
+
+  int endIdx = strC->len - 1;
+  while (endIdx > startIdx && isspace(strC->contents[endIdx])) endIdx--;
+
+  int len = (endIdx - startIdx) + 1;
+
+  uint64_t toRet = newSnakeStringOfLen(len);
+  snakeStringComponents *sDestC = ptrToComponents(toRet);
+  strncpy(sDestC->contents, strC->contents + startIdx, len);
+  return toRet;
 }

@@ -2127,6 +2127,9 @@ let compile_prog ((anfed : tag aprogram), (env : arg name_envt name_envt)) : str
        extern snakeStringCmp\n\
        extern snakeStringConcat\n\
        extern snakeStringSubstring\n\
+       extern snakeStringToUpper\n\
+       extern snakeStringToLower\n\
+       extern snakeStringTrim\n\
        extern ?set_stack_bottom\n\
        global our_code_starts_here\n\
        global create_empty_snake_str\n\

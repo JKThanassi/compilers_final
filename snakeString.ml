@@ -10,6 +10,9 @@ let string_native_bindings =
   [ "snakeStringCmp", (Native, 2)
   ; "snakeStringConcat", (Native, 2)
   ; "snakeStringSubstring", (Native, 3)
+  ; "snakeStringToUpper", (Native, 1)
+  ; "snakeStringToLower", (Native, 1)
+  ; "snakeStringTrim", (Native, 1)
   ]
 ;;
 
