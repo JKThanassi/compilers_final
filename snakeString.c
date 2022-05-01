@@ -132,3 +132,64 @@ uint64_t snakeStringTrim(uint64_t str) {
   strncpy(sDestC->contents, strC->contents + startIdx, len);
   return toRet;
 }
+
+uint64_t snakeStringEqual(uint64_t str1, uint64_t str2) {
+  snakeStringComponents *str1C = ptrToComponents(str1);
+  snakeStringComponents *str2C = ptrToComponents(str2);
+  if (str1C->len != str2C->len) {
+    return false;
+  }
+  for (uint64_t i = 0; i <= str1C->len - 2; i++) {
+    if (str1C->contents[i] != str2C->contents[i]) return false;
+  }
+  return true;
+}
+
+uint64_t snakeStringIdxOf(uint64_t str, uint64_t substr) {
+  snakeStringComponents *strC = ptrToComponents(str);
+  snakeStringComponents *substrC = ptrToComponents(substr);
+  if (strC->len == 0) return str;
+
+  int startIdx = 0;
+  for (int x = 0; x < strC->len; x++) {
+    if (snakeStringEqual(snakeStringSubstring(str, x, x + substrC->len),
+                         substr) == 1) {
+      return x;
+    }
+  }
+  error(ERR_SUBSTR_NOT_FOUND, str);
+}
+
+uint64_t snakeStringContains(uint64_t str, uint64_t substr) {
+  snakeStringComponents *strC = ptrToComponents(str);
+  snakeStringComponents *substrC = ptrToComponents(substr);
+  if (strC->len == 0) return str;
+
+  int startIdx = 0;
+  for (int x = 0; x < strC->len; x++) {
+    if (snakeStringEqual(snakeStringSubstring(str, x, x + substrC->len),
+                         substr)) {
+      return true;
+      ;
+    }
+  }
+  return false;
+}
+
+uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace,
+                            uint64_t replaceWith) {
+  snakeStringComponents *strC = ptrToComponents(str);
+  snakeStringComponents *toReplaceC = ptrToComponents(toReplace);
+  snakeStringComponents *replaceWithC = ptrToComponents(replaceWith);
+  if (strC->len == 0) return str;
+
+  int startIdx = 0;
+  for (int x = 0; x < strC->len; x++) {
+    if (snakeStringEqual(snakeStringSubstring(str, x, x + toReplaceC->len),
+                         toReplaceC)) {
+      return true;
+      ;
+    }
+  }
+  return false;
+}

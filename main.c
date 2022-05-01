@@ -319,6 +319,9 @@ void error(uint64_t code, SNAKEVAL val) {
               "end <= len of str: %ld",
               code);
       break;
+    case ERR_SUBSTR_NOT_FOUND:
+      fprintf(stderr, "Error: Substring not found in given string");
+      break;
     default:
       fprintf(stderr, "Error: Unknown error code: %ld, val: ", code);
       printHelp(stderr, val);

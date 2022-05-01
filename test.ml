@@ -1323,6 +1323,7 @@ let string_tests_passing =
       "snakeStringTrim(\"       lots of padding on either side    \")"
       ""
       "lots of padding on either side"
+  ; t "string_test_idxof" "snakeStringEqual(\"hello\", \"hella\")" "" "0"
   ]
 ;;
 
@@ -1332,7 +1333,7 @@ let () =
   run_test_tt_main
     ("all_tests"
     >::: string_tests_passing
-         @ old_suite
+         (*          @ old_suite
          @ pair_tests
          (* @ oom *)
          @ gc
@@ -1340,5 +1341,6 @@ let () =
          @ interference
          @ graph_coloring
          @ reg_alloc_tests
-         @ [ input_file_test_suite () ])
+         @ [ input_file_test_suite () ]) *)
+    )
 ;;

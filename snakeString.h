@@ -12,6 +12,7 @@ static const uint64_t SNAKE_STRING_TAG = 0x0000000000000007;
 static const uint64_t SNAKE_STRING_MASK = 0x000000000000000F;
 static const uint64_t ERR_VAL_NOT_STRING = 18;
 static const uint64_t ERR_SUBSTRING_BAD_ARGS = 19;
+static const uint64_t ERR_SUBSTR_NOT_FOUND = 20;
 
 // fwd decl of try_gc
 uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t bytes_needed,
@@ -67,10 +68,6 @@ extern uint64_t snakeStringConcat(uint64_t s1,
  */
 uint64_t snakeStringSubstring(uint64_t s1, uint64_t start,
                               uint64_t end) asm("snakeStringSubstring");
-uint64_t snakeStringIdxOf(uint64_t str, uint64_t toSeek);
-uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace,
-                            uint64_t replaceWith);
-uint64_t snakeStringContains(uint64_t str, uint64_t contains);
 /**
  * Converts string to uppercase in place
  *
@@ -103,5 +100,44 @@ uint64_t snakeStringToLower(uint64_t str);
  * The pointer to a new snakeString with the whitespace removed
  */
 uint64_t snakeStringTrim(uint64_t str);
+/**
+ * Returns the index of the start of the first occurance of the substring in the
+ * string, or errors if the substring is not found.
+ *
+ * Args:
+ * str: the snakeString to search through
+ * toSeek: the snakeString to find in str
+ *
+ * returns:
+ * The index of the start of the first occurance of the substr in the str if it
+ * exists.  If the substring does not exist, throws an error.
+ */
+uint64_t snakeStringIdxOf(uint64_t str, uint64_t toSeek);
+
+uint64_t snakeStringEqual(uint64_t str, uint64_t toSeek);
+/**
+ * Returns the index of the start of the substring in the string, or errors if
+ * the substring is not found.
+ *
+ * Args:
+ * str: the snakeString to search through
+ * toSeek: the snakeString to find in str
+ *
+ * returns:
+ * The index of the start of the substr in the str
+ */
+uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace,
+                            uint64_t replaceWith);
+/**
+ * Determines whether the given string contains the given substring.
+ *
+ * Args:
+ * str: the snakeString to search through
+ * contains: the snakeString to try to find
+ *
+ * returns:
+ * True if str contains contains, false otherwise.
+ */
+uint64_t snakeStringContains(uint64_t str, uint64_t contains);
 
 #endif

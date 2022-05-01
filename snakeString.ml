@@ -13,6 +13,10 @@ let string_native_bindings =
   ; "snakeStringToUpper", (Native, 1)
   ; "snakeStringToLower", (Native, 1)
   ; "snakeStringTrim", (Native, 1)
+  ; "snakeStringIdxOf", (Native, 2)
+  ; "snakeStringContains", (Native, 2)
+  ; "snakeStringReplace", (Native, 3)
+  ; "snakeStringEqual", (Native, 2)
   ]
 ;;
 
