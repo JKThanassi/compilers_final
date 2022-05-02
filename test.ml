@@ -715,6 +715,18 @@ let gc =
       \       end"
       ""
       "(1, 2)"
+    (* ; tgc
+      "gc_lam_with_string"
+      false
+      10
+      "let f = (lambda: \"this is a funky string\") in\n\
+      \       begin\n\
+      \         f();\n\
+      \         f();\n\
+      \         f()\n\
+      \       end"
+      ""
+      "this is a funky string" *)
   ]
 ;;
 
@@ -904,7 +916,7 @@ let interference =
        x_116: z_126, y_120, binop_128\n\
        y_120: x_116\n\
        z_126: x_116, r_146, q_137, g_134, binop_139"
-  ; teq "live_test" live_test "b_125: x_116\nx_116: y_125, b_125\ny_120: x_116"
+  ; teq "live_test" live_test "b_125: x_116\nx_116: y_120, b_125\ny_120: x_116"
   ; teq
       "let_using_builtins"
       let_using_builtins
@@ -1282,6 +1294,59 @@ let reg_alloc_tests =
   ]
 ;;
 
+let string_tests_error =
+  [ terr
+      "err_ptr_to_components_number"
+      "snakeStringToUpper(1)"
+      ""
+      "Error 18: Error: Expected a string value: 18, instead got val: 1"
+  ; terr
+      "err_ptr_to_components_bool"
+      "snakeStringToUpper(true)"
+      ""
+      "Error 18: Error: Expected a string value: 18, instead got val: true"
+  ; terr
+      "err_ptr_to_components_bool_false"
+      "snakeStringToUpper(false)"
+      ""
+      "Error 18: Error: Expected a string value: 18, instead got val: false"
+  ; terr
+      "err_ptr_to_components_tuple"
+      "snakeStringToUpper((\"hi\", 3))"
+      ""
+      "Error 18: Error: Expected a string value: 18, instead got val: (hi, 3)"
+  ; terr
+      "err_idxOf_notFound"
+      "snakeStringIdxOf(\"my string\", \"z\")"
+      ""
+      "Error 20: Error: Substring not found in given string"
+  ; terr
+      "err_idxOf_notFound_2"
+      "snakeStringIdxOf(\"my string\", \"my stringm\")"
+      ""
+      "Error 19: Error: Substring requires that start/end > 0, start <= end, and end <= \
+       len of str: 19"
+  ; terr
+      "err_substring_neg_idx"
+      "snakeStringSubstring(\"my string\", -1, 5)"
+      ""
+      "Error 19: Error: Substring requires that start/end > 0, start <= end, and end <= \
+       len of str: 19"
+  ; terr
+      "err_substring_first_idx_after_second"
+      "snakeStringSubstring(\"my string\", 7, 5)"
+      ""
+      "Error 19: Error: Substring requires that start/end > 0, start <= end, and end <= \
+       len of str: 19"
+  ; terr
+      "err_substring_out_of_bounds"
+      "snakeStringSubstring(\"my string\", 7, 10)"
+      ""
+      "Error 19: Error: Substring requires that start/end > 0, start <= end, and end <= \
+       len of str: 19"
+  ]
+;;
+
 let string_tests_passing =
   [ teq
       "string_test_1"
@@ -1324,13 +1389,28 @@ let string_tests_passing =
       ""
       "w"
   ; t
+      "string_test_substring_spaces"
+      "snakeStringSubstring(\"what is good everyone\", 1, 10)"
+      ""
+      "hat is go"
+  ; t
       "string_test_to_upper"
       "snakeStringToUpper(\"whats up this is now uppercase\")"
       ""
       "WHATS UP THIS IS NOW UPPERCASE"
   ; t
+      "string_test_to_upper_some_already"
+      "snakeStringToUpper(\"whats up THIS is NOW uppercasE\")"
+      ""
+      "WHATS UP THIS IS NOW UPPERCASE"
+  ; t
       "string_test_to_lower"
       "snakeStringToLower(\"WHATS UP THIS IS NOW LOWERCASE\")"
+      ""
+      "whats up this is now lowercase"
+  ; t
+      "string_test_to_lower_some_already"
+      "snakeStringToLower(\"wHATS Up THIS IS now LOWERCASE\")"
       ""
       "whats up this is now lowercase"
   ; t
@@ -1343,6 +1423,22 @@ let string_tests_passing =
       "snakeStringTrim(\"no padding on either side\")"
       ""
       "no padding on either side"
+  ; t
+      "string_test_trim_lots_of_different_whitespace"
+      "snakeStringTrim(\"  \n \t   \rmixed padding on either side \")"
+      ""
+      "mixed padding on either side"
+  ; t "string_test_trim_all_whitespace" "snakeStringTrim(\"  \n \t     \r    \")" "" ""
+  ; t
+      "string_test_trim_left"
+      "snakeStringTrim(\"  \n \t     \r    hello\tthere\")"
+      ""
+      "hello\tthere"
+  ; t
+      "string_test_trim_right"
+      "snakeStringTrim(\"hello \n hello  \n   test  \n \t     \r    \")"
+      ""
+      "hello \n hello  \n   test"
   ; t "string_test_idxof" "snakeStringIdxOf(\"hello\", \"e\")" "" "1"
   ; t "string_idxof_gets_first" "snakeStringIdxOf(\"hello\", \"l\")" "" "2"
   ; t "string_idxof_test" "snakeStringIdxOf(\"hello\", \"h\")" "" "0"
@@ -1420,6 +1516,7 @@ let () =
   run_test_tt_main
     ("all_tests"
     >::: string_tests_passing
+         @ string_tests_error
          @ old_suite
          @ pair_tests
          (* @ oom *)

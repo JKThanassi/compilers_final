@@ -151,8 +151,8 @@ void printHelp(FILE *out, SNAKEVAL val) {
     // Unmark this tuple: restore its length
     //*(addr) = len * 2; // length is encoded
   } else if (isSnakeString(val)) {
-    char *tmp = snakeStringToCString(val);
-    fprintf(out, "%s", tmp);
+    snakeStringComponents* tmp = ptrToComponents(val);
+    fprintf(out, "%.*s\0\n", tmp->len, tmp->contents);
     free(tmp);
   }
 
@@ -329,8 +329,8 @@ void error(uint64_t code, SNAKEVAL val) {
       fprintf(stderr, "Error: Unknown error code: %ld, val: ", code);
       printHelp(stderr, val);
   }
-  fprintf(stderr, "\n%p ==> ", (uint64_t *)val);
-  printHelp(stderr, val);
+  // fprintf(stderr, "\n%p ==> ", (uint64_t *)val);
+  // printHelp(stderr, val);
   fprintf(stderr, "\n");
   fflush(stderr);
   naive_print_heap(HEAP, HEAP_END);

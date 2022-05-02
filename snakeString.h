@@ -7,10 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-// typedef struct {
-//   uint64_t len;
-//   char *contents;
-// } snakeStringComponents;
+typedef struct {
+  uint64_t len;
+  char *contents;
+} snakeStringComponents;
 
 
 static const uint64_t SNAKE_TRUE = 0xFFFFFFFFFFFFFFFF;
@@ -25,12 +25,12 @@ static const uint64_t ERR_SUBSTR_NOT_FOUND = 20;
 /**
  * takes a snakeString value and returns a struct of its len and string contents
  */
-// snakeStringComponents *ptrToComponents(uint64_t val);
+snakeStringComponents *ptrToComponents(uint64_t val);
 
 /**
  * takes in the length of a string and returns how many words it will occupy in memory including str size and padding
  */
-// uint64_t strLenToNumWords(uint64_t strLen);
+int numWordsForStringOfLen(uint64_t strLen);
 
 // fwd decl of try_gc
 uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t bytes_needed,

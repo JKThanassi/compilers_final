@@ -4,11 +4,6 @@
 #include <stdint.h>
 #include <string.h>
 
-typedef struct {
-  uint64_t len;
-  char *contents;
-} snakeStringComponents;
-
 snakeStringComponents *ptrToComponents(uint64_t val) {
   if (!isSnakeString(val)) {
     error(ERR_VAL_NOT_STRING, val);
@@ -24,13 +19,19 @@ snakeStringComponents *ptrToComponents(uint64_t val) {
   return toRet;
 }
 
-uint64_t newSnakeStringOfLen(uint64_t strLen) {
-  const int wordSize = 8;
-
+int numWordsForStringOfLen(uint64_t strLen) {
+  int wordSize = 8;
   uint64_t numWords = (strLen / wordSize) + 1;
   numWords = ((strLen % wordSize) == 0) ? numWords : numWords + 1;
   numWords = (numWords % 2) == 0 ? numWords : numWords + 1;
 
+  return numWords;
+}
+
+uint64_t newSnakeStringOfLen(uint64_t strLen) {
+  const int wordSize = 8;
+
+  uint64_t numWords = numWordsForStringOfLen(strLen);
   int numBytes = numWords * wordSize;
   uint64_t untaggedStr = create_empty_snake_str(numBytes, strLen);
   uint64_t taggedStr = untaggedStr + SNAKE_STRING_TAG;
@@ -79,6 +80,8 @@ uint64_t snakeStringConcat(uint64_t s1, uint64_t s2) {
   snakeStringComponents *sDestC = ptrToComponents(toRet);
   strncpy(sDestC->contents, s1c->contents, s1c->len);
   strncpy(sDestC->contents + s1c->len, s2c->contents, s2c->len);
+  free(s1c);
+  free(s2c);
   return toRet;
 }
 
@@ -88,12 +91,15 @@ uint64_t snakeStringSubstring(uint64_t s1, uint64_t start, uint64_t end) {
   uint64_t shiftedEnd = ((int64_t)end) >> 1;
   if (shiftedStart < 0 || shiftedEnd < 0 || shiftedEnd < shiftedStart ||
       shiftedEnd > s1c->len) {
+    free(s1c);
     error(ERR_SUBSTRING_BAD_ARGS, start);
   }
   uint64_t len = shiftedEnd - shiftedStart;
   uint64_t dest = newSnakeStringOfLen(len);
   snakeStringComponents *destC = ptrToComponents(dest);
   strncpy(destC->contents, s1c->contents + shiftedStart, len);
+  free(destC);
+  free(s1c);
   return dest;
 }
 
@@ -102,6 +108,7 @@ uint64_t snakeStringToUpper(uint64_t str) {
   for (int i = 0; i < strC->len; i++) {
     strC->contents[i] = toupper(strC->contents[i]);
   }
+  free(strC);
   return str;
 }
 
@@ -110,6 +117,7 @@ uint64_t snakeStringToLower(uint64_t str) {
   for (int i = 0; i < strC->len; i++) {
     strC->contents[i] = tolower(strC->contents[i]);
   }
+  free(strC);
   return str;
 }
 
@@ -128,6 +136,8 @@ uint64_t snakeStringTrim(uint64_t str) {
   uint64_t toRet = newSnakeStringOfLen(len);
   snakeStringComponents *sDestC = ptrToComponents(toRet);
   strncpy(sDestC->contents, strC->contents + startIdx, len);
+  free(strC);
+  free(sDestC);
   return toRet;
 }
 
@@ -144,9 +154,13 @@ uint64_t snakeStringIdxOf(uint64_t str, uint64_t substr) {
     uint64_t snakeLen = ((int64_t)substrC->len) << 1;
     if (snakeStringCmp(snakeStringSubstring(str, snakeX, snakeX + snakeLen),
                        substr) == 0) {
+      free(strC);
+      free(substrC);
       return ((int64_t)x) << 1;
     }
   }
+  free(strC);
+  free(substrC);
   error(ERR_SUBSTR_NOT_FOUND, str);
 }
 
@@ -163,10 +177,14 @@ uint64_t snakeStringContains(uint64_t str, uint64_t substr) {
     uint64_t snakeLen = ((int64_t)substrC->len) << 1;
     if (snakeStringCmp(snakeStringSubstring(str, snakeX, snakeX + snakeLen),
                        substr) == 0) {
+      free(strC);
+      free(substrC);
       return SNAKE_TRUE;
       ;
     }
   }
+  free(strC);
+  free(substrC);
   return SNAKE_FALSE;
 }
 
@@ -183,16 +201,21 @@ uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace,
   if (convertedIdxOf == 0) {
     startAndReplaceWith = replaceWith;
   } else {
-    startStr =
-        snakeStringSubstring(str, 0, idxOf);
+    startStr = snakeStringSubstring(str, 0, idxOf);
     startAndReplaceWith = snakeStringConcat(startStr, replaceWith);
   }
   if ((convertedIdxOf + toReplaceC->len) == strC->len) {
+    free(strC);
+    free(toReplaceC);
+    free(replaceWithC);
     return startAndReplaceWith;
   } else {
     uint64_t convertedStrLen = ((int64_t)strC->len) << 1;
     uint64_t endStr = snakeStringSubstring(
         str, idxOf + convertedLengthToReplace, convertedStrLen);
+    free(strC);
+    free(toReplaceC);
+    free(replaceWithC);
     return snakeStringConcat(startAndReplaceWith, endStr);
   }
 }

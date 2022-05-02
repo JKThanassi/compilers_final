@@ -9,7 +9,8 @@
             "cwd": ".",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/output/string_test_concat.run",
+            "args": ["10"],
+            "program": "${workspaceRoot}/output/gc_lam_with_string.run",
             "stopAtEntry": false,
             "linux": {
                 "MIMode": "gdb",

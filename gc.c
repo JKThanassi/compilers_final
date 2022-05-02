@@ -114,16 +114,19 @@ uint64_t *copy_if_needed(uint64_t *garter_val_addr, uint64_t *heap_top) {
       // heap_thing_addr[i] = *heap_top; // I think we need to set the value
       // here ?
     }
+  } else if (masked_garter_val == SNAKE_STRING_TAG) {
+    uint64_t *heap_thing_addr = (uint64_t *)(garter_val - SNAKE_STRING_TAG);
+    snakeStringComponents *strC = ptrToComponents(garter_val);
+    *heap_top = strC->len;
+    int wordsOccupied = numWordsForStringOfLen(strC->len);
+    memset(heap_top + 1, 0, (wordsOccupied - 1) * 8);
+    strncpy(heap_top + 1, strC->contents, strC->len);
+    *garter_val_addr = (uint64_t)heap_top;
+    *heap_thing_addr = ((uint64_t)heap_top + FORWARDING_TAG);
+    heap_top += wordsOccupied;
+    free(strC);
+    return heap_top;
   }
-  // } else if (masked_garter_val == SNAKE_STRING_TAG) {
-  //   snakeStringComponents *strC = ptrToComponents(garter_val);
-  //   *heap_top = strC->len;
-  //   int wordsOccupied = strLenToNumWords(strC->len);
-  //   memset(heap_top + 1, 0, (wordsOccupied - 1) * 8);
-  //   strncpy(heap_top + 1, strC->contents, strC->len);
-  //   heap_top += wordsOccupied;
-  //   return heap_top;
-  // }
 
   return heap_top;
 }
