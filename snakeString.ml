@@ -16,7 +16,6 @@ let string_native_bindings =
   ; "snakeStringIdxOf", (Native, 2)
   ; "snakeStringContains", (Native, 2)
   ; "snakeStringReplace", (Native, 3)
-  ; "snakeStringEqual", (Native, 2)
   ]
 ;;
 
@@ -27,7 +26,7 @@ let reserve_words_from_str_len (len : int) : int =
   (* + 1 here is to store the length of the string *)
   let rem_word =
     let rem = len mod word_size in
-    rem / rem
+    if rem = 0 then 0 else 1
   in
   let padding_word =
     let word_len = num_whole_words + rem_word in

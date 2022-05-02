@@ -1,6 +1,5 @@
 #include "snakeString.h"
 
-#include <bits/stdint-uintn.h>
 #include <ctype.h>
 #include <stdint.h>
 #include <string.h>
@@ -26,7 +25,6 @@ snakeStringComponents *ptrToComponents(uint64_t val) {
 }
 
 uint64_t newSnakeStringOfLen(uint64_t strLen) {
-  uint64_t *heapTop, *currFrame, *stackTop;
   const int wordSize = 8;
 
   uint64_t numWords = (strLen / wordSize) + 1;
@@ -133,28 +131,20 @@ uint64_t snakeStringTrim(uint64_t str) {
   return toRet;
 }
 
-uint64_t snakeStringEqual(uint64_t str1, uint64_t str2) {
-  snakeStringComponents *str1C = ptrToComponents(str1);
-  snakeStringComponents *str2C = ptrToComponents(str2);
-  if (str1C->len != str2C->len) {
-    return false;
-  }
-  for (uint64_t i = 0; i <= str1C->len - 2; i++) {
-    if (str1C->contents[i] != str2C->contents[i]) return false;
-  }
-  return true;
-}
-
 uint64_t snakeStringIdxOf(uint64_t str, uint64_t substr) {
   snakeStringComponents *strC = ptrToComponents(str);
   snakeStringComponents *substrC = ptrToComponents(substr);
-  if (strC->len == 0) return str;
 
-  int startIdx = 0;
-  for (int x = 0; x < strC->len; x++) {
-    if (snakeStringEqual(snakeStringSubstring(str, x, x + substrC->len),
-                         substr) == 1) {
-      return x;
+  if (substrC->len == 0) return 0;
+
+  for (int x = 0; x <= strC->len - substrC->len; x++) {
+    // Converting these to snake nums since snakeString functions assume values
+    // are snakeNumbers
+    uint64_t snakeX = ((int64_t)x) << 1;
+    uint64_t snakeLen = ((int64_t)substrC->len) << 1;
+    if (snakeStringCmp(snakeStringSubstring(str, snakeX, snakeX + snakeLen),
+                       substr) == 0) {
+      return ((int64_t)x) << 1;
     }
   }
   error(ERR_SUBSTR_NOT_FOUND, str);
@@ -163,17 +153,21 @@ uint64_t snakeStringIdxOf(uint64_t str, uint64_t substr) {
 uint64_t snakeStringContains(uint64_t str, uint64_t substr) {
   snakeStringComponents *strC = ptrToComponents(str);
   snakeStringComponents *substrC = ptrToComponents(substr);
-  if (strC->len == 0) return str;
 
-  int startIdx = 0;
-  for (int x = 0; x < strC->len; x++) {
-    if (snakeStringEqual(snakeStringSubstring(str, x, x + substrC->len),
-                         substr)) {
-      return true;
+  if (substrC->len == 0) return SNAKE_TRUE;
+
+  for (int x = 0; x <= strC->len - substrC->len; x++) {
+    // Converting these to snake nums since snakeString functions assume values
+    // are snakeNumbers
+    uint64_t snakeX = ((int64_t)x) << 1;
+    uint64_t snakeLen = ((int64_t)substrC->len) << 1;
+    if (snakeStringCmp(snakeStringSubstring(str, snakeX, snakeX + snakeLen),
+                       substr) == 0) {
+      return SNAKE_TRUE;
       ;
     }
   }
-  return false;
+  return SNAKE_FALSE;
 }
 
 uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace,
@@ -181,15 +175,24 @@ uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace,
   snakeStringComponents *strC = ptrToComponents(str);
   snakeStringComponents *toReplaceC = ptrToComponents(toReplace);
   snakeStringComponents *replaceWithC = ptrToComponents(replaceWith);
-  if (strC->len == 0) return str;
 
-  int startIdx = 0;
-  for (int x = 0; x < strC->len; x++) {
-    if (snakeStringEqual(snakeStringSubstring(str, x, x + toReplaceC->len),
-                         toReplaceC)) {
-      return true;
-      ;
-    }
+  uint64_t idxOf = snakeStringIdxOf(str, toReplace);
+  uint64_t convertedLengthToReplace = ((int64_t)toReplaceC->len) << 1;
+  int convertedIdxOf = ((int64_t)idxOf) >> 1;
+  uint64_t startStr, startAndReplaceWith;
+  if (convertedIdxOf == 0) {
+    startAndReplaceWith = replaceWith;
+  } else {
+    startStr =
+        snakeStringSubstring(str, 0, idxOf);
+    startAndReplaceWith = snakeStringConcat(startStr, replaceWith);
   }
-  return false;
+  if ((convertedIdxOf + toReplaceC->len) == strC->len) {
+    return startAndReplaceWith;
+  } else {
+    uint64_t convertedStrLen = ((int64_t)strC->len) << 1;
+    uint64_t endStr = snakeStringSubstring(
+        str, idxOf + convertedLengthToReplace, convertedStrLen);
+    return snakeStringConcat(startAndReplaceWith, endStr);
+  }
 }

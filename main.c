@@ -89,6 +89,9 @@ SNAKEVAL equal(SNAKEVAL val1, SNAKEVAL val2) {
     }
     return BOOL_TRUE;
   }
+  if ((val1 & SNAKE_STRING_MASK) == SNAKE_STRING_TAG && (val2 & SNAKE_STRING_MASK) == SNAKE_STRING_TAG) {
+    return snakeStringCmp(val1, val2) == 0 ? BOOL_TRUE : BOOL_FALSE;
+  }
   return BOOL_FALSE;
 }
 

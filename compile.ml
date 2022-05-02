@@ -2130,7 +2130,6 @@ let compile_prog ((anfed : tag aprogram), (env : arg name_envt name_envt)) : str
        extern snakeStringToUpper\n\
        extern snakeStringToLower\n\
        extern snakeStringTrim\n\
-       extern snakeStringEqual\n\
        extern snakeStringIdxOf\n\
        extern snakeStringContains\n\
        extern snakeStringReplace\n\

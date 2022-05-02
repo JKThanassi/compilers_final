@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "snakeString.h"
+
 typedef uint64_t SNAKEVAL;
 
 void printHelp(FILE *out, SNAKEVAL val);
@@ -113,6 +115,15 @@ uint64_t *copy_if_needed(uint64_t *garter_val_addr, uint64_t *heap_top) {
       // here ?
     }
   }
+  // } else if (masked_garter_val == SNAKE_STRING_TAG) {
+  //   snakeStringComponents *strC = ptrToComponents(garter_val);
+  //   *heap_top = strC->len;
+  //   int wordsOccupied = strLenToNumWords(strC->len);
+  //   memset(heap_top + 1, 0, (wordsOccupied - 1) * 8);
+  //   strncpy(heap_top + 1, strC->contents, strC->len);
+  //   heap_top += wordsOccupied;
+  //   return heap_top;
+  // }
 
   return heap_top;
 }

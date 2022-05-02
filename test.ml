@@ -859,86 +859,98 @@ let interference =
   ; teq
       "lets_but_vars_unused"
       prog_with_lets_but_vars_unused
-      "a_40: \nx_28: \ny_32: \nz_36: "
-  ; teq "simple_let_2_vars_both_used" simple_let_prog "x_28: y_32\ny_32: x_28"
+      "a_128: \nx_116: \ny_120: \nz_124: "
+  ; teq "simple_let_2_vars_both_used" simple_let_prog "x_116: y_120\ny_120: x_116"
   ; teq
       "simple_let_prog_let_ref_itself"
       simple_let_prog_let_ref_itself
-      "x_28: y_32\ny_32: x_28"
-  ; teq "simple_nested_let" simple_nested_let "x_28: \ny_32: "
-  ; teq "simple_nested_let_2" simple_nested_let_2 "x_28: y_32\ny_32: x_28\nz_36: "
+      "x_116: y_120\ny_120: x_116"
+  ; teq "simple_nested_let" simple_nested_let "x_116: \ny_120: "
+  ; teq "simple_nested_let_2" simple_nested_let_2 "x_116: y_120\ny_120: x_116\nz_124: "
   ; teq "simple_lambda" simple_lambda ""
-  ; teq "lambda_with_edges" lambda_with_edges "y_28: z_32\nz_32: y_28"
-  ; teq "if_test" if_test "binop_27: \nx_32: \ny_37: "
-  ; teq "simple_let_rec" simple_let_rec "x_28: y_32\ny_32: x_28"
+  ; teq "lambda_with_edges" lambda_with_edges "y_116: z_120\nz_120: y_116"
+  ; teq "if_test" if_test "binop_115: \nx_120: \ny_125: "
+  ; teq "simple_let_rec" simple_let_rec "x_116: y_120\ny_120: x_116"
   ; teq
       "let_rec_using_vars"
       let_rec_using_vars
-      "a_28: y_40, x_32\n\
-       equal_4: x_32\n\
-       input_14: x_32\n\
-       print_20: x_32\n\
-       x_32: y_40, print_20, input_14, equal_4, a_28\n\
-       y_40: x_32, a_28"
+      "a_116: y_128, x_120\n\
+       equal_92: x_120\n\
+       input_102: x_120\n\
+       print_108: x_120\n\
+       snakeStringCmp_82: x_120\n\
+       snakeStringConcat_72: x_120\n\
+       snakeStringContains_16: x_120\n\
+       snakeStringIdxOf_26: x_120\n\
+       snakeStringReplace_4: x_120\n\
+       snakeStringSubstring_60: x_120\n\
+       snakeStringToLower_44: x_120\n\
+       snakeStringToUpper_52: x_120\n\
+       snakeStringTrim_36: x_120\n\
+       x_120: y_128, snakeStringTrim_36, snakeStringToUpper_52, snakeStringToLower_44, \
+       snakeStringSubstring_60, snakeStringReplace_4, snakeStringIdxOf_26, \
+       snakeStringContains_16, snakeStringConcat_72, snakeStringCmp_82, print_108, \
+       input_102, equal_92, a_116\n\
+       y_128: x_120, a_116"
   ; teq
       "nested_lets"
       nested_lets
-      "binop_40: x_28\n\
-       binop_51: z_38\n\
-       binop_61: r_58\n\
-       g_46: z_38, r_58\n\
-       q_49: z_38\n\
-       r_58: z_38, g_46, binop_61\n\
-       x_28: z_38, y_32, binop_40\n\
-       y_32: x_28\n\
-       z_38: x_28, r_58, q_49, g_46, binop_51"
-  ; teq "live_test" live_test "b_37: x_28\nx_28: y_32, b_37\ny_32: x_28"
+      "binop_128: x_116\n\
+       binop_139: z_126\n\
+       binop_149: r_146\n\
+       g_134: z_126, r_146\n\
+       q_137: z_126\n\
+       r_146: z_126, g_134, binop_149\n\
+       x_116: z_126, y_120, binop_128\n\
+       y_120: x_116\n\
+       z_126: x_116, r_146, q_137, g_134, binop_139"
+  ; teq "live_test" live_test "b_125: x_116\nx_116: y_125, b_125\ny_120: x_116"
   ; teq
       "let_using_builtins"
       let_using_builtins
-      "a_28: print_20, equal_4, c_39, b_33\n\
-       and_45: c_39\n\
-       b_33: equal_4, c_39, a_28\n\
-       c_39: b_33, and_45, a_28\n\
-       equal_4: print_20, input_14, b_33, a_28\n\
-       input_14: print_20, equal_4\n\
-       print_20: input_14, equal_4, a_28"
+      "a_116: print_108, equal_92, c_127, b_121\n\
+       and_133: c_127\n\
+       b_121: equal_92, c_127, a_116\n\
+       c_127: b_121, and_133, a_116\n\
+       equal_92: print_108, input_102, b_121, a_116\n\
+       input_102: print_108, equal_92\n\
+       print_108: input_102, equal_92, a_116"
   ; teq
       "buncha_free_vars"
       buncha_free_vars
-      "a_28: l_72, k_68, j_64, i_60, h_56, g_52, f_48, e_44, d_40, c_36, b_32\n\
-       b_32: l_72, k_68, j_64, i_60, h_56, g_52, f_48, e_44, d_40, c_36, a_28\n\
-       c_36: l_72, k_68, j_64, i_60, h_56, g_52, f_48, e_44, d_40, b_32, a_28\n\
-       d_40: l_72, k_68, j_64, i_60, h_56, g_52, f_48, e_44, c_36, b_32, a_28\n\
-       e_44: l_72, k_68, j_64, i_60, h_56, g_52, f_48, d_40, c_36, b_32, a_28\n\
-       f_48: l_72, k_68, j_64, i_60, h_56, g_52, e_44, d_40, c_36, b_32, a_28\n\
-       g_52: l_72, k_68, j_64, i_60, h_56, f_48, e_44, d_40, c_36, b_32, a_28\n\
-       h_56: l_72, k_68, j_64, i_60, g_52, f_48, e_44, d_40, c_36, b_32, a_28\n\
-       i_60: l_72, k_68, j_64, h_56, g_52, f_48, e_44, d_40, c_36, b_32, a_28\n\
-       j_64: l_72, k_68, i_60, h_56, g_52, f_48, e_44, d_40, c_36, b_32, a_28\n\
-       k_68: l_72, j_64, i_60, h_56, g_52, f_48, e_44, d_40, c_36, b_32, a_28\n\
-       l_72: k_68, j_64, i_60, h_56, g_52, f_48, e_44, d_40, c_36, b_32, a_28"
+      "a_116: l_160, k_156, j_152, i_148, h_144, g_140, f_136, e_132, d_128, c_124, b_120\n\
+       b_120: l_160, k_156, j_152, i_148, h_144, g_140, f_136, e_132, d_128, c_124, a_116\n\
+       c_124: l_160, k_156, j_152, i_148, h_144, g_140, f_136, e_132, d_128, b_120, a_116\n\
+       d_128: l_160, k_156, j_152, i_148, h_144, g_140, f_136, e_132, c_124, b_120, a_116\n\
+       e_132: l_160, k_156, j_152, i_148, h_144, g_140, f_136, d_128, c_124, b_120, a_116\n\
+       f_136: l_160, k_156, j_152, i_148, h_144, g_140, e_132, d_128, c_124, b_120, a_116\n\
+       g_140: l_160, k_156, j_152, i_148, h_144, f_136, e_132, d_128, c_124, b_120, a_116\n\
+       h_144: l_160, k_156, j_152, i_148, g_140, f_136, e_132, d_128, c_124, b_120, a_116\n\
+       i_148: l_160, k_156, j_152, h_144, g_140, f_136, e_132, d_128, c_124, b_120, a_116\n\
+       j_152: l_160, k_156, i_148, h_144, g_140, f_136, e_132, d_128, c_124, b_120, a_116\n\
+       k_156: l_160, j_152, i_148, h_144, g_140, f_136, e_132, d_128, c_124, b_120, a_116\n\
+       l_160: k_156, j_152, i_148, h_144, g_140, f_136, e_132, d_128, c_124, b_120, a_116"
   ; teq
       "nested_tup_equals_interference"
       nested_tup_equal
-      "equal_4: y_43, x_28, tup_54, tup_52, tup_50, tup_46, tup_39, tup_37, tup_35, \
-       tup_31, print_20, input_14\n\
-       input_14: equal_4\n\
-       print_20: equal_4\n\
-       tup_31: equal_4\n\
-       tup_35: equal_4\n\
-       tup_37: equal_4\n\
-       tup_39: equal_4\n\
-       tup_46: x_28, equal_4\n\
-       tup_50: x_28, equal_4\n\
-       tup_52: x_28, equal_4\n\
-       tup_54: x_28, equal_4\n\
-       x_28: y_43, tup_54, tup_52, tup_50, tup_46, equal_4\n\
-       y_43: x_28, equal_4"
+      "equal_92: y_131, x_116, tup_142, tup_140, tup_138, tup_134, tup_127, tup_125, \
+       tup_123, tup_119, print_108, input_102\n\
+       input_102: equal_92\n\
+       print_108: equal_92\n\
+       tup_119: equal_92\n\
+       tup_123: equal_92\n\
+       tup_125: equal_92\n\
+       tup_127: equal_92\n\
+       tup_134: x_116, equal_92\n\
+       tup_138: x_116, equal_92\n\
+       tup_140: x_116, equal_92\n\
+       tup_142: x_116, equal_92\n\
+       x_116: y_131, tup_142, tup_140, tup_138, tup_134, equal_92\n\
+       y_131: x_116, equal_92"
   ; teq
       "print_input_call"
       input_print_call
-      "app_27: print_20\ninput_14: print_20\nprint_20: input_14, app_27"
+      "app_115: print_108\ninput_102: print_108\nprint_108: input_102, app_115"
   ]
 ;;
 
@@ -1130,13 +1142,13 @@ let graph_coloring =
   ; teq
       "let_using_builtins_graph_coloring"
       let_using_builtins_graph_coloring
-      "and_45 -> R12\n\
-       input_14 -> R12\n\
-       b_33 -> R13\n\
-       c_39 -> R10\n\
-       print_20 -> R13\n\
-       a_28 -> R12\n\
-       equal_4 -> R10"
+      "and_133 -> R12\n\
+       input_102 -> R12\n\
+       b_121 -> R13\n\
+       c_127 -> R10\n\
+       print_108 -> R13\n\
+       a_116 -> R12\n\
+       equal_92 -> R10"
   ; teq
       "deep_primop_thingy_graph_coloring"
       deep_primop_thingy_graph_coloring
@@ -1170,47 +1182,47 @@ let graph_coloring =
   ; teq
       "nested_tup_equal_graph_coloring"
       nested_tup_equal_graph_coloring
-      "input_14 -> R12\n\
-       print_20 -> R12\n\
-       tup_31 -> R12\n\
-       tup_35 -> R12\n\
-       tup_37 -> R12\n\
-       tup_39 -> R12\n\
-       tup_46 -> R13\n\
-       tup_50 -> R13\n\
-       tup_52 -> R13\n\
-       tup_54 -> R13\n\
-       y_43 -> R13\n\
-       x_28 -> R12\n\
-       equal_4 -> R10"
+      "input_102 -> R12\n\
+       print_108 -> R12\n\
+       tup_119 -> R12\n\
+       tup_123 -> R12\n\
+       tup_125 -> R12\n\
+       tup_127 -> R12\n\
+       tup_134 -> R13\n\
+       tup_138 -> R13\n\
+       tup_140 -> R13\n\
+       tup_142 -> R13\n\
+       y_131 -> R13\n\
+       x_116 -> R12\n\
+       equal_92 -> R10"
   ; teq
       "print_input_graph_coloring"
       input_print_call_graph_coloring
-      "app_27 -> R12\ninput_14 -> R12\nprint_20 -> R10"
+      "app_115 -> R12\ninput_102 -> R12\nprint_108 -> R10"
   ; teq
       "live_test_graph_coloring"
       live_test_graph_coloring
-      "b_37 -> R12\ny_32 -> R12\nx_28 -> R10"
+      "b_125 -> R12\ny_120 -> R12\nx_116 -> R10"
   ; teq
       "live_test_graph_coloring"
       three_nested_let_last_one_live_graph_coloring
-      "app_31 -> R12\n\
-       input_14 -> R12\n\
-       z_39 -> R12\n\
-       x_28 -> R13\n\
-       y_35 -> R12\n\
-       print_20 -> R10"
+      "app_119 -> R12\n\
+       input_102 -> R12\n\
+       z_127 -> R12\n\
+       x_116 -> R13\n\
+       y_123 -> R12\n\
+       print_108 -> R10"
   ; teq
       "many_nested_ifs_live_graph_coloring"
       many_nested_ifs_live_graph_coloring
-      "binop_58 -> R10\n\
-       b_39 -> R13\n\
-       tup_49 -> R14\n\
-       z_36 -> R13\n\
-       z_46 -> R14\n\
-       if_42 -> R13\n\
-       x_28 -> R12\n\
-       y_32 -> R10"
+      "binop_146 -> R10\n\
+       b_127 -> R13\n\
+       tup_137 -> R14\n\
+       z_124 -> R13\n\
+       z_134 -> R14\n\
+       if_130 -> R13\n\
+       x_116 -> R12\n\
+       y_120 -> R10"
   ]
 ;;
 
@@ -1277,7 +1289,7 @@ let string_tests_passing =
       "\nEString<bruh, 1:13-1:14>(hello there!)"
   ; t "string_test_only_string" "\"hello there\"" "" "hello there"
   ; t
-      "string_test_only_string_much longer"
+      "string_test_only_string_much_longer"
       "\"hello there my name is joe. How are you? This is a loooooooooooooong string. \n\
       \ even has a newline and slashes \\ \t and tabs\""
       ""
@@ -1289,8 +1301,11 @@ let string_tests_passing =
       ""
       "hello there"
   ; t "string_test_cmp_same" "snakeStringCmp(\"abcdefg\", \"abcdefg\")" "" "0"
+  ; t "string_test_cmp_empty_str" "snakeStringCmp(\"\", \"\")" "" "0"
   ; t "string_test_cmp_less_than" "snakeStringCmp(\"abcde\", \"abcdefg\")" "" "-1"
+  ; t "string_test_cmp_less_than_empty_str" "snakeStringCmp(\"\", \"abcdefg\")" "" "-1"
   ; t "string_test_cmp_greater_than" "snakeStringCmp(\"abcdefg\", \"abcd\")" "" "1"
+  ; t "string_test_cmp_greater_than_empty_str" "snakeStringCmp(\"abcdefg\", \"\")" "" "1"
   ; t "string_test_cmp_same_len_g_t" "snakeStringCmp(\"gggaazz\", \"gggaaaa\")" "" "25"
   ; t "string_test_cmp_same_len_l_t" "snakeStringCmp(\"gggaaaa\", \"gggaazz\")" "" "-25"
   ; t
@@ -1323,7 +1338,79 @@ let string_tests_passing =
       "snakeStringTrim(\"       lots of padding on either side    \")"
       ""
       "lots of padding on either side"
-  ; t "string_test_idxof" "snakeStringEqual(\"hello\", \"hella\")" "" "0"
+  ; t
+      "string_test_trim_no_whitespace"
+      "snakeStringTrim(\"no padding on either side\")"
+      ""
+      "no padding on either side"
+  ; t "string_test_idxof" "snakeStringIdxOf(\"hello\", \"e\")" "" "1"
+  ; t "string_idxof_gets_first" "snakeStringIdxOf(\"hello\", \"l\")" "" "2"
+  ; t "string_idxof_test" "snakeStringIdxOf(\"hello\", \"h\")" "" "0"
+  ; t "string_idxof_gets_last" "snakeStringIdxOf(\"hello\", \"o\")" "" "4"
+  ; t
+      "string_idxof_multiword"
+      "snakeStringIdxOf(\"hello there hella there\", \"a\")"
+      ""
+      "16"
+  ; t "idxof_empty" "snakeStringIdxOf(\"hello there hella there\", \"\")" "" "0"
+  ; t
+      "idxof_multichar_whole_thing"
+      "snakeStringIdxOf(\"hello there hella there\", \"hello there hella there\")"
+      ""
+      "0"
+  ; t "idxof_multichar" "snakeStringIdxOf(\"hello there hella there\", \"hella\")" "" "12"
+  ; t
+      "idxof_multichar_with_space"
+      "snakeStringIdxOf(\"hello there hella there x\", \" x\")"
+      ""
+      "23"
+  ; t
+      "idxof_multichar_exists_twice"
+      "snakeStringIdxOf(\"hello there hella there x\", \"there\")"
+      ""
+      "6"
+  ; t "string_contains_test" "snakeStringContains(\"hello\", \"e\")" "" "true"
+  ; t "string_contains_false_test" "snakeStringContains(\"hello\", \"r\")" "" "false"
+  ; t "string_contains_multichar_test" "snakeStringContains(\"hello\", \"ell\")" "" "true"
+  ; t
+      "string_contains_multichar_false_test"
+      "snakeStringContains(\"hello\", \"ellop\")"
+      ""
+      "false"
+  ; t "string_contains_empty" "snakeStringContains(\"hello there\", \"\")" "" "true"
+  ; t
+      "string_replace_first"
+      "snakeStringReplace(\"hello there\", \"h\", \"t\")"
+      ""
+      "tello there"
+  ; t
+      "string_replace_middle"
+      "snakeStringReplace(\"hello there\", \"lo th\", \"mn\")"
+      ""
+      "helmnere"
+  ; t
+      "string_replace_end"
+      "snakeStringReplace(\"hello there\", \"re\", \"are\")"
+      ""
+      "hello theare"
+  ; t
+      "string_replace_empty_to_replace"
+      "snakeStringReplace(\"hello there\", \"\", \"wow\")"
+      ""
+      "wowhello there"
+  ; t
+      "string_replace_empty_replace_with"
+      "snakeStringReplace(\"hello there\", \"ll\", \"\")"
+      ""
+      "heo there"
+  ; t "builtin_equals_string_true_diff_ptrs" "equal(\"hello\", \"hello\")" "" "true"
+  ; t "builtin_equals_string_true_same_ptr" "let a = \"hello\" in equal(a,a)" "" "true"
+  ; t "builtin_equals_string_false" "let a = \"hello\" in equal(a,\"sup\")" "" "false"
+  ; t
+      "builtin_equals_string_false_one_nil"
+      "let a = \"hello\" in equal(nil,\"sup\")"
+      ""
+      "false"
   ]
 ;;
 
@@ -1333,7 +1420,7 @@ let () =
   run_test_tt_main
     ("all_tests"
     >::: string_tests_passing
-         (*          @ old_suite
+         @ old_suite
          @ pair_tests
          (* @ oom *)
          @ gc
@@ -1341,6 +1428,5 @@ let () =
          @ interference
          @ graph_coloring
          @ reg_alloc_tests
-         @ [ input_file_test_suite () ]) *)
-    )
+         @ [ input_file_test_suite () ])
 ;;

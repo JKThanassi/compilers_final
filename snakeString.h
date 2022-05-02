@@ -1,18 +1,36 @@
 #ifndef SNAKE_STRING_H
 #define SNAKE_STRING_H
 
-#include <bits/stdint-uintn.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+// typedef struct {
+//   uint64_t len;
+//   char *contents;
+// } snakeStringComponents;
+
+
+static const uint64_t SNAKE_TRUE = 0xFFFFFFFFFFFFFFFF;
+static const uint64_t SNAKE_FALSE = 0x7FFFFFFFFFFFFFFF;
 static const uint64_t SNAKE_STRING_TAG = 0x0000000000000007;
 static const uint64_t SNAKE_STRING_MASK = 0x000000000000000F;
 static const uint64_t ERR_VAL_NOT_STRING = 18;
 static const uint64_t ERR_SUBSTRING_BAD_ARGS = 19;
 static const uint64_t ERR_SUBSTR_NOT_FOUND = 20;
+
+
+/**
+ * takes a snakeString value and returns a struct of its len and string contents
+ */
+// snakeStringComponents *ptrToComponents(uint64_t val);
+
+/**
+ * takes in the length of a string and returns how many words it will occupy in memory including str size and padding
+ */
+// uint64_t strLenToNumWords(uint64_t strLen);
 
 // fwd decl of try_gc
 uint64_t *try_gc(uint64_t *alloc_ptr, uint64_t bytes_needed,
@@ -66,7 +84,7 @@ extern uint64_t snakeStringConcat(uint64_t s1,
  * if these conditions are not met an error will be thrown
  * Another note, the indicies here are 0 indexed
  */
-uint64_t snakeStringSubstring(uint64_t s1, uint64_t start,
+extern uint64_t snakeStringSubstring(uint64_t s1, uint64_t start,
                               uint64_t end) asm("snakeStringSubstring");
 /**
  * Converts string to uppercase in place
@@ -78,7 +96,7 @@ uint64_t snakeStringSubstring(uint64_t s1, uint64_t start,
  * The pointer to the snakeString passed in with the contents changed to
  * uppercase
  */
-uint64_t snakeStringToUpper(uint64_t str);
+extern uint64_t snakeStringToUpper(uint64_t str) asm("snakeStringToUpper");
 /**
  * Converts string to lowercase in place
  *
@@ -89,7 +107,7 @@ uint64_t snakeStringToUpper(uint64_t str);
  * The pointer to the snakeString passed in with the contents changed to
  * lowercase
  */
-uint64_t snakeStringToLower(uint64_t str);
+extern uint64_t snakeStringToLower(uint64_t str) asm("snakeStringToLower");
 /**
  * Returns a new string with the leading and trailing whitespace removed
  *
@@ -99,9 +117,9 @@ uint64_t snakeStringToLower(uint64_t str);
  * returns:
  * The pointer to a new snakeString with the whitespace removed
  */
-uint64_t snakeStringTrim(uint64_t str);
+extern uint64_t snakeStringTrim(uint64_t str) asm("snakeStringTrim");
 /**
- * Returns the index of the start of the first occurance of the substring in the
+ * Gets the index of the start of the first occurance of the substring in the
  * string, or errors if the substring is not found.
  *
  * Args:
@@ -112,22 +130,22 @@ uint64_t snakeStringTrim(uint64_t str);
  * The index of the start of the first occurance of the substr in the str if it
  * exists.  If the substring does not exist, throws an error.
  */
-uint64_t snakeStringIdxOf(uint64_t str, uint64_t toSeek);
+extern uint64_t snakeStringIdxOf(uint64_t str, uint64_t toSeek) asm("snakeStringIdxOf");
 
-uint64_t snakeStringEqual(uint64_t str, uint64_t toSeek);
+// uint64_t snakeStringEqual(uint64_t str, uint64_t toSeek);
 /**
- * Returns the index of the start of the substring in the string, or errors if
- * the substring is not found.
+ * Replaces the first instance of the toReplace string in the given string with the replaceWith string
  *
  * Args:
  * str: the snakeString to search through
- * toSeek: the snakeString to find in str
+ * toReplace: the snakeString to be replaced
+ * replaceWith: the snakeStringto replace toReplace
  *
  * returns:
- * The index of the start of the substr in the str
+ * The given snakeString with the first occurance of toReplace replaced with replaceWith, or if there is no occurance of toReplace, returns the original string unchanged.
  */
-uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace,
-                            uint64_t replaceWith);
+extern uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace,
+                            uint64_t replaceWith) asm("snakeStringReplace");
 /**
  * Determines whether the given string contains the given substring.
  *
@@ -138,6 +156,6 @@ uint64_t snakeStringReplace(uint64_t str, uint64_t toReplace,
  * returns:
  * True if str contains contains, false otherwise.
  */
-uint64_t snakeStringContains(uint64_t str, uint64_t contains);
+extern uint64_t snakeStringContains(uint64_t str, uint64_t contains) asm("snakeStringContains");
 
 #endif

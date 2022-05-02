@@ -9,7 +9,7 @@
             "cwd": ".",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/output/string_test_substring.run",
+            "program": "${workspaceRoot}/output/string_test_concat.run",
             "stopAtEntry": false,
             "linux": {
                 "MIMode": "gdb",
